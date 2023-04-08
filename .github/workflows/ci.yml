@@ -1,0 +1,80 @@
+# Copyright (C) 2023 Toitware ApS. All rights reserved.
+
+name: CI
+
+on:
+  push:
+
+env:
+  EXCLUDED_SUPABASE_SERVICES: imgproxy,inbucket,pgadmin-schema-diff,migra,studio,deno-relay
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Toit
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" = "Windows" ]]; then
+            BIN_EXTENSION=".exe"
+          fi
+          echo "BIN_EXTENSION=$BIN_EXTENSION" >> $GITHUB_ENV
+
+          export TOIT_VERSION="v2.0.0-alpha.74"
+
+          export DOWNLOAD_DIR="${{ github.workspace }}/downloads"
+          echo "DOWNLOAD_DIR=$DOWNLOAD_DIR" >> $GITHUB_ENV
+
+          TOIT_SDK_DIR=$DOWNLOAD_DIR/toit
+          echo "TOIT_EXEC=$TOIT_SDK_DIR/bin/toit.run$BIN_EXTENSION" >> $GITHUB_ENV
+          echo "TOITC_EXEC=$TOIT_SDK_DIR/bin/toit.compile$BIN_EXTENSION" >> $GITHUB_ENV
+          echo "TPKG_EXEC=$TOIT_SDK_DIR/bin/toit.pkg$BIN_EXTENSION" >> $GITHUB_ENV
+
+          TOIT_SDK_FILE=toit-$(echo $RUNNER_OS | tr '[:upper:]' '[:lower:]').tar.gz
+          TOIT_SDK_BASE_URL=https://github.com/toitlang/toit/releases
+
+          echo "TOIT_SDK_URL=$TOIT_SDK_BASE_URL/download/$TOIT_VERSION/$TOIT_SDK_FILE" >> $GITHUB_ENV
+
+      - uses: suisei-cn/actions-download-file@v1.3.0
+        name: Download Toit
+        with:
+          url: ${{ env.TOIT_SDK_URL }}
+          target: ${{ env.DOWNLOAD_DIR }}
+
+      - name: Extract Toit
+        shell: bash
+        run: |
+          cd "$DOWNLOAD_DIR"
+          tar x -f *.tar.gz
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build
+          ninja --version
+          cmake --version
+
+      - name: Install Supabase
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        shell: bash
+        working-directory: ${{ github.workspace }}/tests/supabase_test
+        run: |
+          supabase start -x "$EXCLUDED_SUPABASE_SERVICES"
+          supabase status
+
+      - name: Run cmake
+        shell: bash
+        run: |
+          make rebuild-cmake
+          cmake -DTOITC="$TOITC_EXEC" -DTOITPKG="$TPKG_EXEC" -DTOITRUN="$TOIT_EXEC" -DWITH_LOCAL_SUPABASE=ON build
+
+      - name: Test
+        run: |
+          make test
