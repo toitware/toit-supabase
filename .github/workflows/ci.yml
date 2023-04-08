@@ -60,7 +60,7 @@ jobs:
       - name: Install Supabase
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 1.42.4
 
       - name: Start Supabase
         shell: bash
