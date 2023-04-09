@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Toitware ApS. All rights reserved.
+# Copyright (C) 2023 Toitware ApS. All rights reserved.
 
 file(GLOB TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*_test.toit" "*_test_slow.toit")
 
