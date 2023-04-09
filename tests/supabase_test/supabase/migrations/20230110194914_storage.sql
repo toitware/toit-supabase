@@ -44,3 +44,12 @@ CREATE POLICY "Authenticated can list all buckets"
     FOR SELECT
     TO authenticated
     USING (true);
+
+-- Completely public bucket.
+-- For the demo.
+INSERT INTO storage.buckets (id, name, public)
+    VALUES ('test-demo-public', 'test-demo-public', true);
+CREATE POLICY "Everyone has full access"
+    ON storage.objects
+    FOR ALL
+    USING (bucket_id = 'test-demo-public');

@@ -313,6 +313,7 @@ test_auth client/supabase.Client:
 TEST_BUCKET ::= "test-bucket"
 TEST_BUCKET_PUBLIC ::= "test-bucket-public"
 TEST_BUCKET_PRIVATE ::= "test-bucket-private"
+TEST_DEMO_BUCKET ::= "test-demo-public"
 
 test_storage config/supabase.ServerConfig:
   client_anon := supabase.Client --server_config=config
@@ -379,10 +380,11 @@ test_storage config/supabase.ServerConfig:
       --content=content
 
   auth_buckets := client_auth.storage.list_buckets
-  expect_equals 3 auth_buckets.size
-  expect (auth_buckets.any: it["name"] == "$TEST_BUCKET")
-  expect (auth_buckets.any: it["name"] == "$TEST_BUCKET_PUBLIC")
-  expect (auth_buckets.any: it["name"] == "$TEST_BUCKET_PRIVATE")
+  expect_equals 4 auth_buckets.size
+  expect (auth_buckets.any: it["name"] == TEST_BUCKET)
+  expect (auth_buckets.any: it["name"] == TEST_BUCKET_PUBLIC)
+  expect (auth_buckets.any: it["name"] == TEST_BUCKET_PRIVATE)
+  expect (auth_buckets.any: it["name"] == TEST_DEMO_BUCKET)
 
   anon_buckets := client_anon.storage.list_buckets
   expect anon_buckets.is_empty

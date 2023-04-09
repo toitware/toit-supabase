@@ -118,23 +118,27 @@ class Client:
   /**
   Ensures that the user is authenticated.
 
-  If a session is stored in the local storage, it is used to authenticate the
-    user.
+  If a session is stored in the local storage and is still valid, uses that
+    session. In that case no network request is made. If the session has been
+    invalidated in the meantime an error will happen at later point in time.
 
-  If no session is stored, or the refresh failed, calls the given $block with $auth
-    as argument. This can be used to sign in the user, using $Auth.sign_in.
+  If no session is stored, or the refresh failed, calls the given $block with the
+    reason for why the client isn't authenticated. This could include an error
+    when refreshing an authorization token. In most cases it's simply "Not logged in".
 
   # Examples
   A simple example where the user is signed in using email and password:
   ```
-  client.ensure_authenticated:
-    it.sign_in --email="email" --password="password"
+  client.ensure_authenticated: | reason/string |
+    print "Authentication failure: $reason"
+    client.auth.sign_in --email="email" --password="password"
   ```
 
   Or, using oauth:
   ```
-  client.ensure_authenticated:
-    it.sign_in --provider="github" --ui=ui
+  client.ensure_authenticated: | reason/string |
+    print "Authentication failure: $reason"
+    client.auth.sign_in --provider="github" --ui=ui
   ```
   */
   ensure_authenticated [block]:
@@ -153,7 +157,7 @@ class Client:
       reason = "Error while refreshing the authentication: $exception"
     else:
       reason = "Not logged in"
-    block.call reason auth
+    block.call reason
 
   close -> none:
     if not http_client_: return
@@ -630,4 +634,4 @@ class Storage:
   Computes the public URL for the given $path.
   */
   public_url_for --path/string -> string:
-    return "$client_.host_/object/public/$path"
+    return "$client_.host_/storage/v1/object/public/$path"
