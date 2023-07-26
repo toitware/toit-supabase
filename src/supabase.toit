@@ -64,6 +64,7 @@ class Client:
   rest_/PostgRest? := null
   storage_/Storage? := null
   auth_/Auth? := null
+  realtime_/Realtime? := null
 
   constructor network/net.Interface?=null
       --host/string
@@ -182,6 +183,10 @@ class Client:
   auth -> Auth:
     if not auth_: auth_ = Auth this
     return auth_
+
+  realtime -> Realtime:
+    if not realtime_: realtime_ = Realtime this
+    return realtime_
 
   set_session_ session/Session_?:
     session_ = session
@@ -635,3 +640,45 @@ class Storage:
   */
   public_url_for --path/string -> string:
     return "$client_.host_/storage/v1/object/public/$path"
+
+class Realtime:
+  client_/Client
+  channels_/Map := {:}
+
+  constructor .client_:
+
+  connect:
+
+  close:
+
+  channels -> List:
+    return channels_.values
+
+  /**
+  Joins the channel with the given $name.
+
+  If $ack is set, then the server must acknowledge each message we send to it.
+  If $echo is set, then the server will echo back all messages we send to it.
+  */
+  join_channel name/string --ack/bool=false --echo/bool=false -> Channel:
+    if channels_.contains name:
+      throw "Channel already joined: $name"
+    return Channel
+        --client=client_
+        --name=name
+        --ack=ack
+        --echo=echo
+
+class Channel:
+  client_/Client
+  name_/string
+  ack_/bool
+  echo_/bool
+
+  constructor --client/Client --name/string --ack/bool=false --echo/bool=false:
+    client_ = client
+    name_ = name
+    ack_ = ack
+    echo_ = echo
+
+  close

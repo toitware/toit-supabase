@@ -1,0 +1,45 @@
+https://supabase.com/docs/guides/realtime/protocol
+
+default-timeout: 10s
+heartbeat-interval: 30s
+params:
+  apikey: supabasekey
+default headers. (They use `X-Client-Info: supabase-dart/version`).
+longpoller-timeout=20_000
+
+realtimeUrl: '$supabaseUrl/realtime/v1'.replaceAll('http', 'ws'),
+events-per-second: ignore for now. (10 is default, but seems to be client-side only).
+
+heartbeat goes to:
+topic: 'phoenix'
+event: 'heartbeat'
+payload: {:}
+ref: some incrementing number.
+
+heartbeat-ref may be returned as 'ref' field in any? message.
+If we don't get any response within the heartbeat-interval we are supposed to treat the connection as failed.
+Basically check within the heartbeat that our ref was cleared (which we do when we receive a response).
+
+joinpayload: {'user_token': token}
+// On updates:
+if channel.joinedOnce && channel.isJoined:
+  push(ChannelEvents.accessToken, {'access_token': token})
+  
+When sending a message with a ref, then we get a response on
+'chan_reply_$ref'
+
+Message is of format:
+{
+  "topic": ...
+  "event": <event> (
+    'phx_close', 'phx_error', 'phx_join', 'phx_reply', 'phx_leave'
+    'phx_heartbeat' ?? (Message.toJson calls it 'heartbeat').
+    access_token
+    broadcast
+    presence
+    postgres_changes)
+  "payload": any
+  "ref": some-string
+}
+    
+join:
