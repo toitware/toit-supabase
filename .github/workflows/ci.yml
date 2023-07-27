@@ -6,7 +6,7 @@ on:
   push:
 
 env:
-  EXCLUDED_SUPABASE_SERVICES: imgproxy,inbucket,pgadmin-schema-diff,migra,studio,deno-relay
+  EXCLUDED_SUPABASE_SERVICES: imgproxy,inbucket,pgadmin-schema-diff,migra,studio,deno-relay,edge-runtime
 
 jobs:
   build:
@@ -60,7 +60,7 @@ jobs:
       - name: Install Supabase
         uses: supabase/setup-cli@v1
         with:
-          version: 1.42.4
+          version: 1.82.2
 
       - name: Start Supabase
         shell: bash
