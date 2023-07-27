@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Toitware ApS.
 
 import supabase
+import supabase.filter show *
 import .supabase_local_server
 
 import expect show *
@@ -34,7 +35,7 @@ RPC_SUM ::= "rpc_sum"
 test_rest client/supabase.Client:
   // Clear the test table in case we have leftovers from a previous run.
   // Delete requires a where clause, so we use a filter that is always true.
-  client.rest.delete TEST_TABLE --filters=["id=gte.0"]
+  client.rest.delete TEST_TABLE --filters=[greater_than_or_equal "id" 0]
 
   // The table should be empty now.
   rows := client.rest.select TEST_TABLE
@@ -57,7 +58,7 @@ test_rest client/supabase.Client:
 
   // Update the row.
   client.rest.update TEST_TABLE --filters=[
-    "id=eq.$rows[0]["id"]"
+    equals "id" rows[0]["id"],
   ] {
     "value": 12,
   }
@@ -111,7 +112,7 @@ test_rest client/supabase.Client:
 
   // Use select with filters.
   rows = client.rest.select TEST_TABLE --filters=[
-    "value=eq.14",
+    equals "value" "14",
   ]
   expect_equals 1 rows.size
   expect_equals "test2" rows[0]["name"]
@@ -125,7 +126,7 @@ test_rest client/supabase.Client:
   expect_null inserted
   // Check that the insert succeeded.
   rows = client.rest.select TEST_TABLE --filters=[
-    "name=eq.test3",
+    equals "name" "test3",
   ]
   expect_equals 1 rows.size
   expect_equals "test3" rows[0]["name"]
@@ -167,13 +168,13 @@ test_rest client/supabase.Client:
 
   // Test update.
   client.rest.update TEST_TABLE --filters=[
-    "name=eq.test",
+    equals "name" "test",
   ] {
     "value": 100,
   }
   // Check that the update succeeded.
   rows = client.rest.select TEST_TABLE --filters=[
-    "value=eq.100",
+    equals "value" 100,
   ]
   expect_equals 1 rows.size
   expect_equals "test" rows[0]["name"]
@@ -181,13 +182,13 @@ test_rest client/supabase.Client:
 
   // Test update of multiple rows.
   client.rest.update TEST_TABLE --filters=[
-    "value=lt.99",
+    less_than "value" 99,
   ] {
     "value": 200,
   }
   // Check that the update succeeded.
   rows = client.rest.select TEST_TABLE --filters=[
-    "value=eq.200",
+    equals "value" 200,
   ]
   expect_equals 2 rows.size
   if rows[0]["name"] == "test2":
@@ -202,11 +203,11 @@ test_rest client/supabase.Client:
 
   // Test delete.
   client.rest.delete TEST_TABLE --filters=[
-    "name=eq.test",
+    equals "name" "test",
   ]
   // Check that the delete succeeded.
   rows = client.rest.select TEST_TABLE --filters=[
-    "name=eq.test",
+    equals "name" "test",
   ]
   expect rows.is_empty
 
@@ -230,7 +231,7 @@ test_rest client/supabase.Client:
 
   // Test delete of multiple rows.
   client.rest.delete TEST_TABLE --filters=[
-    "value=lt.250",
+    less_than "value" 250,
   ]
   // Check that the delete succeeded.
   rows = client.rest.select TEST_TABLE
@@ -243,7 +244,7 @@ test_rest client/supabase.Client:
   expect_null result
   // Check that the table now has the 42 entry.
   rows = client.rest.select TEST_TABLE --filters=[
-    "value=eq.42",
+    equals "value" 42,
   ]
   expect_equals 1 rows.size
   expect_equals "rpc" rows[0]["name"]
