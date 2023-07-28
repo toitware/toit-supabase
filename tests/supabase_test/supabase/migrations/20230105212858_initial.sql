@@ -1,4 +1,6 @@
--- Copyright (C) 2023 Toitware ApS. All rights reserved.
+-- Copyright (C) 2023 Toitware ApS.
+-- Use of this source code is governed by a Zero-Clause BSD license that can
+-- be found in the TESTS_LICENSE file.
 
 CREATE TABLE test_table (
   id serial PRIMARY KEY,
