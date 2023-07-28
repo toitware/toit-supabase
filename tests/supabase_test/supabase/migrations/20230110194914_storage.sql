@@ -1,4 +1,6 @@
--- Copyright (C) 2023 Toitware ApS. All rights reserved.
+-- Copyright (C) 2023 Toitware ApS.
+-- Use of this source code is governed by a Zero-Clause BSD license that can
+-- be found in the TESTS_LICENSE file.
 
 -- The bucket is non-public.
 -- This means that files can't be downloaded using the public URL.
