@@ -515,8 +515,16 @@ class FilterLogical_ implements Filter:
   constructor .op .filters:
 
   to_string --nested/bool --negated/bool -> string:
-    first_separator := nested ? "." : "="
-    prefix_string := negated ? "not$first_separator$op." : "$op$first_separator"
+    prefix_string/string := ?
+    if negated and nested:
+      prefix_string = "$(Filter.NOT).$op"
+    else if negated and not nested:
+      prefix_string = "$(Filter.NOT)=$op"
+    else if not negated and nested:
+      prefix_string = "$op"
+    else:
+      assert: not negated and not nested
+      prefix_string = "$op="
     nested_strings := filters.map: it.to_string --nested --negated=false
     joined := nested_strings.join ","
     return "$prefix_string($joined)"

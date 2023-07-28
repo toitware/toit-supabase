@@ -320,3 +320,54 @@ test_filters:
     test --count=(strictly_less + 1) [less_than_or_equal "dates" date]
     test --count=strictly_greater [greater_than "dates" date]
     test --count=(strictly_greater + 1) [greater_than_or_equal "dates" date]
+
+  // Test logical and 'not' operators.
+  rows = client.rest.select TEST_TABLE --filters=[
+    andd [
+      greater_than "value" 5,
+      less_than "value" 7,
+    ],
+  ]
+  expect_equals 1 rows.size
+  expect_equals 6 rows[0]["value"]
+
+  rows = client.rest.select TEST_TABLE --filters=[
+    andd [
+      nott (greater_than "value" 6),
+      nott (less_than "value" 6),
+    ],
+  ]
+  expect_equals 1 rows.size
+  expect_equals 6 rows[0]["value"]
+
+  rows = client.rest.select TEST_TABLE --filters=[
+    andd [
+      orr [
+        greater_than "value" 5,
+        greater_than "value" 6,
+      ],
+      orr [
+        less_than "value" 6,
+        less_than "value" 7,
+      ],
+    ],
+  ]
+  expect_equals 1 rows.size
+  expect_equals 6 rows[0]["value"]
+
+  rows = client.rest.select TEST_TABLE --filters=[
+    nott (nott (nott (nott (equals "value" 6)))),
+  ]
+  expect_equals 1 rows.size
+  expect_equals 6 rows[0]["value"]
+
+  rows = client.rest.select TEST_TABLE --filters=[
+    orr [
+      nott
+        orr [
+          nott (equals "value" 6),
+        ],
+    ],
+  ]
+  expect_equals 1 rows.size
+  expect_equals 6 rows[0]["value"]
