@@ -12,12 +12,13 @@ Provides ways to create $Filter objects for
   operations.
 
 Functions in this library create $Filter objects that can be used
-  to filter the rows that are returned by the database.
+  as arguments to server operations to filter the rows that are
+  returned by the database.
 
 Most of the functionality can be accessed through convenience functions,
   such as $equals, $less_than, or similar. More complex functionality
   might need direct calls to the $Filter constructors. Specifically,
-  $Filter.raw allows to create any filter.
+  $Filter.raw allows one to create any filter.
 
 # Example
 ```
@@ -476,7 +477,6 @@ class FilterIn_ implements Filter:
     joined := encoded_values.join ","
     return "$column_string$(nested ? "." : "=")$not_string$Filter.IN.($joined)"
 
-
 class FilterArray_ implements Filter:
   column/string
   op/string
@@ -546,5 +546,5 @@ class FilterRaw_ implements Filter:
 
   to_string --nested/bool --negated/bool -> string:
     if nested or negated:
-      throw "RAW MUST NOT BE NESTED"
+      throw "RAW_MUST_NOT_BE_NESTED"
     return raw
