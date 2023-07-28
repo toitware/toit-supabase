@@ -6,7 +6,7 @@ on:
   push:
 
 env:
-  EXCLUDED_SUPABASE_SERVICES: imgproxy,inbucket,pgadmin-schema-diff,migra,studio,deno-relay
+  EXCLUDED_SUPABASE_SERVICES: imgproxy,inbucket,pgadmin-schema-diff,migra,studio,deno-relay,edge-runtime
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
           fi
           echo "BIN_EXTENSION=$BIN_EXTENSION" >> $GITHUB_ENV
 
-          export TOIT_VERSION="v2.0.0-alpha.74"
+          export TOIT_VERSION="v2.0.0-alpha.90"
 
           export DOWNLOAD_DIR="${{ github.workspace }}/downloads"
           echo "DOWNLOAD_DIR=$DOWNLOAD_DIR" >> $GITHUB_ENV
@@ -60,7 +60,7 @@ jobs:
       - name: Install Supabase
         uses: supabase/setup-cli@v1
         with:
-          version: 1.42.4
+          version: 1.82.2
 
       - name: Start Supabase
         shell: bash

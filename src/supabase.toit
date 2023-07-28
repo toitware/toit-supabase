@@ -13,6 +13,7 @@ import reader show Reader BufferedReader
 
 import .auth
 import .utils_ as utils
+import .filter show Filter
 
 interface ServerConfig:
   host -> string
@@ -422,16 +423,14 @@ class PostgRest:
   constructor .client_:
 
   encode_filters_ filters/List -> string:
-    escaped := filters.map:
-      equals_index := it.index_of "="
-      if equals_index == -1: throw "INVALID_FILTER"
-      key := it[..equals_index]
-      value := it[equals_index + 1..]
-      "$key=$(url.encode value)"
+    escaped := filters.map: | filter/Filter |
+      filter.to_string --nested=false --negated=false
     return escaped.join "&"
 
   /**
-  Returns a list of rows that match the filters.
+  Returns a list of rows that match the $filters.
+
+  The $filters must be instances of the $Filter class.
   */
   select table/string --filters/List=[] -> List:
     query_filters := encode_filters_ filters
@@ -462,6 +461,8 @@ class PostgRest:
 
   /**
   Performs an 'update' operation on a table.
+
+  The $filters must be instances of the $Filter class.
   */
   update table/string payload/Map --filters/List -> none:
     query_filters := encode_filters_ filters
@@ -505,7 +506,11 @@ class PostgRest:
   /**
   Deletes all rows that match the filters.
 
-  If no filters are given, then all rows are deleted.
+  If no filters are given, then all rows are deleted. Note that some
+    server configurations require at least one filter for a delete
+    operation.
+
+  The $filters must be instances of the $Filter class.
   */
   delete table/string --filters/List -> none:
     query_filters := encode_filters_ filters
