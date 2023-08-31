@@ -10,6 +10,7 @@ import http.status_codes
 import encoding.json
 import encoding.url
 import reader show Reader BufferedReader
+import tls
 
 import .auth
 import .utils_ as utils
@@ -99,11 +100,16 @@ class Client:
       --server_config/ServerConfig
       --local_storage/LocalStorage=NoLocalStorage
       [--certificate_provider]:
-    root_certificate_der := server_config.root_certificate_der
-    if not root_certificate_der and server_config.root_certificate_name:
-      root_certificate_der = certificate_provider.call server_config.root_certificate_name
+    root_certificate := server_config.root_certificate_der
+    if not root_certificate and server_config.root_certificate_name:
+      root_certificate = certificate_provider.call server_config.root_certificate_name
 
-    if root_certificate_der:
+    if root_certificate:
+      root_certificate_der := ?
+      if root_certificate is tls.RootCertificate:
+        root_certificate_der = (root_certificate as tls.RootCertificate).raw
+      else:
+        root_certificate_der = root_certificate
       certificate := x509.Certificate.parse root_certificate_der
       return Client.tls network
           --local_storage=local_storage
