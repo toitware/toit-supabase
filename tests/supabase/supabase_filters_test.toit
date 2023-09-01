@@ -31,8 +31,8 @@ test column/string expected filters/List:
 test_date column/string expected filters/List:
   rows := client.rest.select TEST_TABLE --filters=filters
   expect_equals 1 rows.size
-  time_expected := Time.from_string expected
-  time_actual := Time.from_string rows[0][column]
+  time_expected := Time.parse expected
+  time_actual := Time.parse rows[0][column]
   expect_equals time_expected time_actual
 
 test filters/List --count/int:
