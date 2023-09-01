@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           make rebuild-cmake
-          cmake -DTOITC="$TOITC_EXEC" -DTOITPKG="$TPKG_EXEC" -DTOITRUN="$TOIT_EXEC" -DWITH_LOCAL_SUPABASE=ON build
+          cmake -DTOITC="$TOITC_EXEC" -DTOITPKG="$TPKG_EXEC" -DTOITRUN="$TOIT_EXEC" build
 
       - name: Test
         run: |

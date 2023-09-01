@@ -2,12 +2,17 @@
 # Use of this source code is governed by a Zero-Clause BSD license that can
 # be found in the TESTS_LICENSE file.
 
-file(GLOB TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*_test.toit" "*_test_slow.toit")
+file(GLOB TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*_test.toit"
+    "*_test_slow.toit"
+    # Supabase tests are in their subfolder so that they aren't automatically
+    # run as part of testing in the Toit repository.
+    "supabase/*_test.toit"
+    "supabase/*_test_slow.toit"
+)
 
 set(TEST_TIMEOUT 40 CACHE STRING "The maximal amount of time each test is allowed to run")
 set(SLOW_TEST_TIMEOUT 200 CACHE STRING "The maximal amount of time each slow test is allowed to run")
-# Set to false by default, so we can use this package in our external tests.
-set(WITH_LOCAL_SUPABASE FALSE CACHE BOOL "Whether the local supabase tests should be run")
 
 toit_project(tests "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -24,10 +29,6 @@ set(TEST_PREFIX "")
 include(fail.cmake OPTIONAL)
 
 foreach(file ${TESTS})
-  if ("${file}" MATCHES "supabase" AND NOT "${WITH_LOCAL_SUPABASE}")
-    continue()
-  endif()
-
   set(test_name "/tests/${file}")
 
   if("${test_name}" IN_LIST SKIP_TESTS)
