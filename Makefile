@@ -14,14 +14,14 @@ test: install-pkgs rebuild-cmake
 .PHONY: start-supabase stop-supabase
 
 start-supabase:
-	@ if supabase status --workdir tests/supabase_test &> /dev/null; then \
-	  supabase db reset --workdir tests/supabase_test; \
+	@ if supabase status --workdir tests/supabase/supabase_test &> /dev/null; then \
+	  supabase db reset --workdir tests/supabase/supabase_test; \
 	else \
-	  supabase start --workdir tests/supabase_test; \
+	  supabase start --workdir tests/supabase/supabase_test; \
 	fi
 
 stop-supabase:
-	@ supabase stop --workdir tests/supabase_test --no-backup
+	@ supabase stop --workdir tests/supabase/supabase_test --no-backup
 
 # We rebuild the cmake file all the time.
 # We use "glob" in the cmakefile, and wouldn't otherwise notice if a new
@@ -30,4 +30,4 @@ stop-supabase:
 .PHONY: rebuild-cmake
 rebuild-cmake:
 	mkdir -p build
-	(cd build && cmake .. -DWITH_LOCAL_SUPABASE=ON -G Ninja)
+	(cd build && cmake .. -G Ninja)

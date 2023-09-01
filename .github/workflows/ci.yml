@@ -64,7 +64,7 @@ jobs:
 
       - name: Start Supabase
         shell: bash
-        working-directory: ${{ github.workspace }}/tests/supabase_test
+        working-directory: ${{ github.workspace }}/tests/supabase/supabase_test
         run: |
           supabase start -x "$EXCLUDED_SUPABASE_SERVICES"
           supabase status
@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           make rebuild-cmake
-          cmake -DTOITC="$TOITC_EXEC" -DTOITPKG="$TPKG_EXEC" -DTOITRUN="$TOIT_EXEC" -DWITH_LOCAL_SUPABASE=ON build
+          cmake -DTOITC="$TOITC_EXEC" -DTOITPKG="$TPKG_EXEC" -DTOITRUN="$TOIT_EXEC" build
 
       - name: Test
         run: |
