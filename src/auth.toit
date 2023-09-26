@@ -183,7 +183,7 @@ class Auth:
       network.close
 
   refresh_token:
-    if client_.session_ == null: throw "No session available."
+    if not client_.session_: throw "No session available."
     response := client_.request_
         --method=http.POST
         --path="/auth/v1/token"
@@ -201,11 +201,31 @@ class Auth:
     client_.set_session_ session
 
   /**
+  Sends a reauthentication OTP to the user's email or phone number.
+
+  The nonce can be used in an $update_current_user call when updating a
+    user's password.
+
+  A reauthentication is only needed if the "Secure password change" is
+    enabled in the project's email provider settings.
+
+  Furthermore, a user doesn't need to reauthenticate if they have recently
+    signed in. A user is deemed recently signed in if their session was created
+    in the last 24 hours.
+  */
+  reauthenticate:
+    if not client_.session_: throw "No session available."
+    response := client_.request_
+        --method=http.GET
+        --path="/auth/v1/reauthenticate"
+    return response
+
+  /**
   Returns the currently authenticated user.
   */
   // TODO(florian): We should have this information cached when we sign in.
   get_current_user -> Map?:
-    if client_.session_ == null: throw "No session available."
+    if not client_.session_: throw "No session available."
     response := client_.request_
         --method=http.GET
         --path="/auth/v1/user"
@@ -213,6 +233,29 @@ class Auth:
 
   /**
   Updates the currently authenticated user.
+
+  This method can be used to update a user's email, password, or metadata.
+
+  Accepted values:
+  - "email": The user's email.
+  - "password": The user's password.
+  - "phone": The user's phone.
+  - "email_confirm": Confirms the user's email address if set to true. Only a service
+    rule can modify.
+  - "nonce": The nonce sent for reauthentication if the user's password is to be
+    updated. Call `reauthenticate()` to get the nonce first.
+  - "ban_duration": Determines how long a user is banned for. The format for the ban
+    duration follows a strict sequence of decimal numbers with a unit suffix. Valid time
+    units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Setting the ban duration to
+    'none' lifts the ban on the user.
+  - "user_metadata": A custom data object to store the user's metadata. This maps
+    to the `auth.users.user_metadata` column. The `user_metadata` should be a JSON
+    object that includes user-specific info, such as their first and last name.
+  - "app_metadata": A custom data object to store the user's application specific
+    metadata.
+    This maps to the `auth.users.app_metadata` column. Only a service role can modify.
+    The `app_metadata` should be a JSON object that includes app-specific info, such as
+    identity providers, roles, and other access control information.
   */
   update_current_user data/Map -> none:
     if client_.session_ == null: throw "No session available."
