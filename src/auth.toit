@@ -247,7 +247,7 @@ class Auth:
   - "ban_duration": Determines how long a user is banned for. The format for the ban
     duration follows a strict sequence of decimal numbers with a unit suffix. Valid time
     units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Setting the ban duration to
-    'none' lifts the ban on the user.
+    "none" lifts the ban on the user.
   - "user_metadata": A custom data object to store the user's metadata. This maps
     to the `auth.users.user_metadata` column. The `user_metadata` should be a JSON
     object that includes user-specific info, such as their first and last name.
@@ -258,7 +258,7 @@ class Auth:
     identity providers, roles, and other access control information.
   */
   update_current_user data/Map -> none:
-    if client_.session_ == null: throw "No session available."
+    if not client_.session_: throw "No session available."
     client_.request_
         --method=http.PUT
         --path="/auth/v1/user"
