@@ -182,6 +182,19 @@ class Auth:
     finally:
       network.close
 
+  /**
+  Revokes all refresh tokens for the user.
+  JWT tokens will still be valid for stateless auth until they expire.
+  */
+  logout:
+    if not client_.session_: throw "No session available."
+    response := client_.request_
+        --method=http.POST
+        --path="/auth/v1/logout"
+        --payload=#[]
+    client_.set_session_ null
+    return response
+
   refresh_token:
     if not client_.session_: throw "No session available."
     response := client_.request_
@@ -215,10 +228,9 @@ class Auth:
   */
   reauthenticate:
     if not client_.session_: throw "No session available."
-    response := client_.request_
+    return client_.request_
         --method=http.GET
         --path="/auth/v1/reauthenticate"
-    return response
 
   /**
   Returns the currently authenticated user.
