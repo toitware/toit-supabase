@@ -84,7 +84,7 @@ class Client:
   constructor.tls network/net.Interface?=null
       --host/string
       --anon/string
-      --root_certificates/List
+      --root_certificates/List=[]
       --local_storage/LocalStorage=NoLocalStorage:
     host_ = host
     anon_ = anon
