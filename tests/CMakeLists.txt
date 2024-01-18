@@ -39,12 +39,6 @@ set(SLOW_TEST_TIMEOUT 200 CACHE STRING "The maximal amount of time each slow tes
 include(ProcessorCount)
 ProcessorCount(NUM_CPU)
 
-add_custom_target(
-  check
-  COMMAND ${CMAKE_CTEST_COMMAND} -j${NUM_CPU} -T test --output-on-failure
-  USES_TERMINAL
-)
-
 set(TEST_PREFIX "")
 include(fail.cmake OPTIONAL)
 
