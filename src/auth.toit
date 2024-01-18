@@ -8,6 +8,7 @@ import log
 import monitor
 import net
 import .supabase
+import system show platform PLATFORM-LINUX PLATFORM-MACOS PLATFORM-WINDOWS
 
 /**
 A class that handles all authentication related functionality of the Supabase API.

@@ -8,6 +8,7 @@ import host.file
 import host.directory
 import supabase
 import writer show Writer
+import system show platform PLATFORM_WINDOWS
 
 // TODO(florian): A lot of this functionality should come from the CLI package.
 
