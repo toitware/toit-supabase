@@ -11,10 +11,30 @@ file(GLOB TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "supabase/*_test_slow.toit"
 )
 
+# Add windows exe extension.
+set(TOIT_EXEC "toit.run${CMAKE_EXECUTABLE_SUFFIX}" CACHE FILEPATH "The executable used to run the tests")
+set(TPKG_EXEC "toit.pkg${CMAKE_EXECUTABLE_SUFFIX}" CACHE FILEPATH "The executable used to install the packages")
 set(TEST_TIMEOUT 40 CACHE STRING "The maximal amount of time each test is allowed to run")
 set(SLOW_TEST_TIMEOUT 200 CACHE STRING "The maximal amount of time each slow test is allowed to run")
 
-toit_project(tests "${CMAKE_CURRENT_LIST_DIR}")
+add_custom_target(
+  "install-pkgs"
+  COMMAND "${TPKG_EXEC}" install
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+include(ProcessorCount)
+ProcessorCount(NUM_CPU)
+
+# Add a custom target 'check' that runs our unit tests.
+add_custom_target(
+  "check"
+  COMMAND "${CMAKE_CTEST_COMMAND}" -j${NUM_CPU} --output-on-failure -C Debug
+  USES_TERMINAL
+)
+
+set(TEST_TIMEOUT 40 CACHE STRING "The maximal amount of time each test is allowed to run")
+set(SLOW_TEST_TIMEOUT 200 CACHE STRING "The maximal amount of time each slow test is allowed to run")
 
 include(ProcessorCount)
 ProcessorCount(NUM_CPU)
