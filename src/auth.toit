@@ -93,7 +93,7 @@ class Auth:
         --token_type=response["token_type"]
     client_.set_session_ session
 
-  sign_in --provider/string --ui/Ui --open_browser/bool=true -> none:
+  sign_in --provider/string --ui/Ui --open_browser/bool=true --redirect-url/string?=null -> none:
     network := net.open
     try:
       server_socket := network.tcp_listen 0
@@ -151,10 +151,9 @@ class Auth:
             writer.write "You can close this window now."
             session_latch.set true
           else if request.path.starts_with "/auth":
-            // TODO(florian): extract error if there:
-            // ```
-            // http://localhost:41055/auth?error=server_error&error_description=Database+error+saving+new+user
-            // ```
+            redirect_code := ""
+            if redirect_url:
+              redirect_code = """window.location.href = "$redirect_url" + window.location.hash;"""
             writer.write """
             <html>
               <body>
@@ -165,6 +164,7 @@ class Auth:
                   const req = new XMLHttpRequest();
                   req.addEventListener("load", function() {
                     document.getElementById("body").innerHTML = "You can close this window now.";
+                    $redirect_code
                   });
                   req.open("GET", "http://localhost:$port/success?" + window.location.hash.substring(1));
                   req.send();
