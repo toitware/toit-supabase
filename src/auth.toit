@@ -93,7 +93,7 @@ class Auth:
         --token_type=response["token_type"]
     client_.set_session_ session
 
-  sign_in --provider/string --ui/Ui --open_browser/bool=true --redirect-url/string?=null -> none:
+  sign_in --provider/string --ui/Ui --open_browser/bool=true --redirect_url/string?=null -> none:
     network := net.open
     try:
       server_socket := network.tcp_listen 0
