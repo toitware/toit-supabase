@@ -93,6 +93,15 @@ class Auth:
         --token_type=response["token_type"]
     client_.set_session_ session
 
+  /**
+  Signs in using an Oauth provider.
+
+  The user is redirected to the provider's authentication page and then back to the
+    a localhost URL so that the program can receive the access token. If a
+    $redirect_url is provided, the page redirects to that URL afterwards with the
+    same fragment that this program received. This can be used to provide nicer
+    success or error messages.
+  */
   sign_in --provider/string --ui/Ui --open_browser/bool=true --redirect_url/string?=null -> none:
     network := net.open
     try:
