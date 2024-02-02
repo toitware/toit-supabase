@@ -3,10 +3,11 @@
 // be found in the EXAMPLES_LICENSE file.
 
 import .utils.client
+import system
 
 signup args/List:
   if args.size != 3:
-    print "Usage: $program_name signup <email> <password>"
+    print "Usage: $system.program_name signup <email> <password>"
     exit 1
 
   client := instantiate_client
@@ -15,7 +16,7 @@ signup args/List:
 
 login args/List:
   if args.size != 3:
-    print "Usage: $program_name login <email> <password>"
+    print "Usage: $system.program_name login <email> <password>"
     exit 1
 
   client := instantiate_client
