@@ -221,7 +221,8 @@ class Client:
       --query/string? = null
       --query_parameters/Map? = null
       --headers/http.Headers? = null
-      --payload/any = null:
+      --payload/any = null
+      --schema/string? = null:
 
     if query and query_parameters:
       throw "Cannot provide both query and query_parameters"
@@ -234,6 +235,12 @@ class Client:
     headers.set "Authorization" "Bearer $bearer"
 
     headers.add "apikey" anon_
+
+    if schema:
+      if method == http.GET or method == http.HEAD:
+        headers.add "Accept-Profile" schema
+      else:
+        headers.add "Content-Profile" schema
 
     question_mark_pos := path.index_of "?"
     if question_mark_pos >= 0:
@@ -304,7 +311,8 @@ class Client:
       --query_parameters/Map? = null
       --headers/http.Headers? = null
       --parse_response_json/bool = true
-      --payload/any = null:
+      --payload/any = null
+      --schema/string? = null:
     response := request_
         --raw_response
         --path=path
@@ -314,6 +322,7 @@ class Client:
         --query_parameters=query_parameters
         --headers=headers
         --payload=payload
+        --schema=schema
 
     body := response.body
     if not is_success_status_code_ response.status_code:
@@ -438,12 +447,13 @@ class PostgRest:
 
   The $filters must be instances of the $Filter class.
   */
-  select table/string --filters/List=[] -> List:
+  select table/string --filters/List=[] --schema/string?=null -> List:
     query_filters := encode_filters_ filters
     return client_.request_
         --method=http.GET
         --path="/rest/v1/$table"
         --query=query_filters
+        --schema=schema
 
   /**
   Inserts a new row to the table.
@@ -452,7 +462,11 @@ class PostgRest:
 
   If $return_inserted is true, then returns the inserted row.
   */
-  insert table/string payload/Map --return_inserted/bool=true -> Map?:
+  insert -> Map?
+      table/string
+      payload/Map
+      --return_inserted/bool=true
+      --schema/string?=null:
     headers := http.Headers
     headers.add "Prefer" "return=$(return_inserted ? RETURN_REPRESENTATION_ : RETURN_MINIMAL_)"
     response := client_.request_
@@ -461,6 +475,7 @@ class PostgRest:
         --path="/rest/v1/$table"
         --payload=payload
         --parse_response_json=return_inserted
+        --schema=schema
     if return_inserted:
       return response.size == 0 ? null : response[0]
     return null
@@ -470,7 +485,7 @@ class PostgRest:
 
   The $filters must be instances of the $Filter class.
   */
-  update table/string payload/Map --filters/List -> none:
+  update table/string payload/Map --filters/List --schema/string?=null -> none:
     query_filters := encode_filters_ filters
     // We are not using the response. Use the minimal response.
     headers := http.Headers
@@ -482,6 +497,7 @@ class PostgRest:
         --payload=payload
         --parse_response_json=false
         --query=query_filters
+        --schema=schema
 
   /**
   Performs an 'upsert' operation on a table.
@@ -490,7 +506,11 @@ class PostgRest:
   If adding a row would violate a unique constraint, then the row is
     updated instead.
   */
-  upsert table/string payload/Map --ignore_duplicates/bool=false -> none:
+  upsert -> none
+      table/string
+      payload/Map
+      --ignore_duplicates/bool=false
+      --schema/string?=null:
     // TODO(florian): add support for '--on_conflict'.
     // In that case the conflict detection is on the column given by
     // on_column (which must be 'UNIQUE').
@@ -508,6 +528,7 @@ class PostgRest:
         --path="/rest/v1/$table"
         --payload=payload
         --parse_response_json=false
+        --schema=schema
 
   /**
   Deletes all rows that match the filters.
@@ -518,7 +539,7 @@ class PostgRest:
 
   The $filters must be instances of the $Filter class.
   */
-  delete table/string --filters/List -> none:
+  delete table/string --filters/List --schema/string?=null -> none:
     query_filters := encode_filters_ filters
     // We are not using the response. Use the minimal response.
     headers := http.Headers
@@ -529,15 +550,17 @@ class PostgRest:
         --path="/rest/v1/$table"
         --parse_response_json=false
         --query=query_filters
+        --schema=schema
 
   /**
   Performs a remote procedure call (RPC).
   */
-  rpc name/string payload/Map -> any:
+  rpc name/string payload/Map --schema/string?=null -> any:
     return client_.request_
         --method=http.POST
         --path="/rest/v1/rpc/$name"
         --payload=payload
+        --schema=schema
 
 class Storage:
   client_/Client
