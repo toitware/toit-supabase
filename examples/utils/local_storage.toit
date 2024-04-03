@@ -7,7 +7,6 @@ import host.os
 import host.file
 import host.directory
 import supabase
-import writer show Writer
 import system show platform PLATFORM_WINDOWS
 
 // TODO(florian): A lot of this functionality should come from the CLI package.
@@ -62,8 +61,7 @@ class ConfigLocalStorage implements supabase.LocalStorage:
     config_dir := dirname_ path_
     directory.mkdir --recursive config_dir
     stream := file.Stream.for_write path_
-    writer := Writer stream
-    writer.write (json.encode config_)
+    stream.out.write (json.encode config_)
     // TODO(florian): we would like to call 'close' here.
     // writer.close
     stream.close

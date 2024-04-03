@@ -2,26 +2,24 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file.
 
-import reader show Reader SizedReader UNEXPECTED_END_OF_READER_EXCEPTION
-import bytes
+import io
+import io show Reader
 
 // TODO(kasper): This is unlikely to be the best place to share this
 // code. Should we consider having this as part of the core libraries?
 read_all reader/Reader -> ByteArray:
-  size/int? := reader is SizedReader
-      ? (reader as SizedReader).size
-      : null
+  size/int? := reader.content-size
 
   first := reader.read
   if not first:
-    if size and size > 0: throw UNEXPECTED_END_OF_READER_EXCEPTION
+    if size and size > 0: throw Reader.UNEXPECTED_END_OF_READER
     return #[]
 
   second := reader.read
   if not second:
     if size:
       missing := size - first.size
-      if missing > 0: throw UNEXPECTED_END_OF_READER_EXCEPTION
+      if missing > 0: throw Reader.UNEXPECTED_END_OF_READER
       else if missing < 0: throw "OUT_OF_BOUNDS"
     return first
 
@@ -36,10 +34,10 @@ read_all reader/Reader -> ByteArray:
     while chunk := reader.read:
       result.replace offset chunk
       offset += chunk.size
-    if offset != size: throw UNEXPECTED_END_OF_READER_EXCEPTION
+    if offset != size: throw Reader.UNEXPECTED_END_OF_READER
     return result
   else:
-    buffer := bytes.Buffer.with_initial_size first.size + second.size
+    buffer := io.Buffer.with-capacity first.size + second.size
     buffer.write first
     first = null  // Allow garbage collection.
     buffer.write second
