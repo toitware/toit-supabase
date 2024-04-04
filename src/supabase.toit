@@ -2,14 +2,13 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file.
 
-import bytes
 import http
 import net
 import net.x509
 import http.status_codes
 import encoding.json
 import encoding.url
-import reader show Reader BufferedReader
+import io
 import tls
 
 import .auth
@@ -275,8 +274,8 @@ class Client:
       // TODO(florian): we should only do this if the payload is a Map.
       encoded := json.encode payload
       headers.set "Content-Type" "application/json"
-      request := http_client_.new_request method host_ path --headers=headers
-      request.body = bytes.Reader encoded
+      request := http_client_.new_request method --host=host_ --path=path --headers=headers
+      request.body = io.Reader encoded
       response = request.send
     else:
       if method != http.POST: throw "UNIMPLEMENTED"
@@ -345,8 +344,8 @@ class Client:
     // Still check whether there is a response.
     // When performing an RPC we can't know in advance whether the function
     // returns something or not.
-    buffered_body := BufferedReader body
-    if not buffered_body.can_ensure 1:
+    buffered_body := body
+    if not buffered_body.try-ensure-buffered 1:
       return null
 
     try:
@@ -593,14 +592,14 @@ class Storage:
   If $public is true, downloads the data through the public URL.
   */
   download --path/string --public/bool=false -> ByteArray:
-    download --path=path --public=public: | reader/Reader |
+    download --path=path --public=public: | reader/io.Reader |
       return utils.read_all reader
     unreachable
 
   /**
   Downloads the data stored in $path from the storage.
 
-  Calls the given $block with a $Reader for the resource.
+  Calls the given $block with an $io.Reader for the resource.
 
   If $public is true, downloads the data through the public URL.
   */

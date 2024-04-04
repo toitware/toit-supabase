@@ -156,15 +156,16 @@ class Auth:
       session_latch := monitor.Latch
       server_task := task::
         server.listen server_socket:: | request/http.Request writer/http.ResponseWriter |
+          out := writer.out
           if request.path.starts_with "/success":
             finish_oauth_sign_in request.path
-            writer.write "You can close this window now."
+            out.write "You can close this window now."
             session_latch.set true
           else if request.path.starts_with "/auth":
             redirect_code := ""
             if redirect_url:
               redirect_code = """window.location.href = "$redirect_url" + window.location.hash;"""
-            writer.write """
+            out.write """
             <html>
               <body>
                 <p id="body">
@@ -184,7 +185,7 @@ class Auth:
             </html>
             """
           else:
-            writer.write "Invalid request."
+            out.write "Invalid request."
 
       session_latch.get
       sleep --ms=1  // Give the server time to respond with the success message.
