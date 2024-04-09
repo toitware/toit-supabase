@@ -14,9 +14,9 @@ jobs:
       matrix:
         # The versions should contain (at least) the lowest requirement
         #    and a version that is more up to date.
-        toit-version: [ v2.0.0-alpha.128, latest ]
+        toit-version: [ v2.0.0-alpha.144, latest ]
         include:
-          - toit-version: v2.0.0-alpha.128
+          - toit-version: v2.0.0-alpha.144
             version-name: old
           - toit-version: latest
             version-name: new

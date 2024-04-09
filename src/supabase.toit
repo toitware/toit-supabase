@@ -274,7 +274,11 @@ class Client:
       // TODO(florian): we should only do this if the payload is a Map.
       encoded := json.encode payload
       headers.set "Content-Type" "application/json"
-      request := http_client_.new_request method --host=host_ --path=path --headers=headers
+      request := http_client_.new_request method
+          --host=host
+          --port=port
+          --path=path
+          --headers=headers
       request.body = io.Reader encoded
       response = request.send
     else:
