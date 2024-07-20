@@ -12,7 +12,6 @@ main:
   config := get_supabase_config --sub_directory="supabase/supabase_test"
 
   client = supabase.Client --server_config=config
-      --certificate_provider=: unreachable
 
   try:
     test_filters

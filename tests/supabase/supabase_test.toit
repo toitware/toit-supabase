@@ -17,7 +17,6 @@ main:
   config := get_supabase_config --sub_directory="supabase/supabase_test"
 
   client := supabase.Client --server_config=config
-      --certificate_provider=: unreachable
 
   try:
     test_rest client
@@ -320,12 +319,10 @@ TEST_DEMO_BUCKET ::= "test-demo-public"
 
 test_storage config/supabase.ServerConfig:
   client_anon := supabase.Client --server_config=config
-      --certificate_provider=: unreachable
 
   email := "test-$random@toit.io"
 
   client_auth := supabase.Client --server_config=config
-      --certificate_provider=: unreachable
   client_auth.auth.sign_up --email=email --password=AUTH_PASSWORD
   client_auth.auth.sign_in --email=email --password=AUTH_PASSWORD
 
