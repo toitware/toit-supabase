@@ -27,7 +27,7 @@ class Auth:
   Use $finish_oauth_sign_in to provide the returned information to this instance.
   */
   compute_authenticate_url --redirect_url/string --provider/string -> string:
-    return "https://$(client_.host_)/auth/v1/authorize?provider=$provider&redirect_to=$redirect_url"
+    return "$(client_.uri_)/auth/v1/authorize?provider=$provider&redirect_to=$redirect_url"
 
   /**
   Finishes the OAuth sign-in.
