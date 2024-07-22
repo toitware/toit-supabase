@@ -22,18 +22,7 @@ instantiate_client -> supabase.Client
     print "Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables"
     exit 1
 
-  is_tls := url.starts_with "https://"
-  host := url.trim --left "https://"
-  host = host.trim --left "http://"
-  client/supabase.Client := ?
-  if is_tls:
-    return supabase.Client.tls
-        --host=host
-        --anon=anon
-        --root_certificates=[certificate_roots.BALTIMORE_CYBERTRUST_ROOT]
-        --local_storage=local_storage
-  else:
-    return supabase.Client
-        --host=host
-        --anon=anon
-        --local_storage=local_storage
+  return supabase.Client
+      --uri=url
+      --anon=anon
+      --local_storage=local_storage
