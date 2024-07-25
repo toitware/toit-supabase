@@ -223,7 +223,7 @@ class Client:
     else if query:
       path = "$path?$query"
 
-    uri := "$uri_/$path"
+    uri := "$uri_$path"
     response/http.Response := ?
     if method == http.GET:
       if payload: throw "GET requests cannot have a payload"
@@ -563,8 +563,8 @@ class Storage:
       headers = http.Headers
       headers.add "Range" "bytes=$offset-$end"
     full_path := public
-        ? "storage/v1/object/public/$path"
-        : "storage/v1/object/$path"
+        ? "/storage/v1/object/public/$path"
+        : "/storage/v1/object/$path"
     response := client_.request_ --raw_response
         --method=http.GET
         --path=full_path
