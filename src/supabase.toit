@@ -223,7 +223,7 @@ class Client:
     else if query:
       path = "$path?$query"
 
-    uri := "$uri_/$path"
+    uri := "$uri_$path"
     response/http.Response := ?
     if method == http.GET:
       if payload: throw "GET requests cannot have a payload"
