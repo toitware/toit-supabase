@@ -1,13 +1,21 @@
 sdk: ^2.0.0-alpha.144
 prefixes:
+  desktop: pkg-desktop
   host: pkg-host
   http: pkg-http
 packages:
+  pkg-desktop:
+    url: github.com/toitlang/pkg-desktop
+    name: desktop
+    version: 1.0.0
+    hash: 9c36fbb2cb28706705d9a21158c2fc9345108f6c
+    prefixes:
+      host: pkg-host
   pkg-host:
     url: github.com/toitlang/pkg-host
     name: host
-    version: 1.15.0
-    hash: 2588faa0c7553eca9a85cb6f829f3df41d9466f2
+    version: 1.15.3
+    hash: 62393e8522b77eafbafe60b9817935266117daf6
   pkg-http:
     url: github.com/toitlang/pkg-http
     name: http
