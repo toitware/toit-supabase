@@ -330,41 +330,41 @@ test_storage config/supabase.ServerConfig:
   client_auth.auth.sign_in --email=email --password=AUTH_PASSWORD
 
   file_name := "test-file-$(random).txt"
-  content := "Hello world!".to_byte_array
+  contents := "Hello world!".to_byte_array
 
   // Anon and authenticated can download, but only authenticated can
   //   upload, delete and change.
-  client_auth.storage.upload --path="$TEST_BUCKET/$file_name" --content=content
+  client_auth.storage.upload --path="$TEST_BUCKET/$file_name" --contents=contents
 
   // Both can download.
   downloaded := client_auth.storage.download --path="$TEST_BUCKET/$file_name"
-  expect_equals content downloaded
+  expect_equals contents downloaded
 
   downloaded = client_anon.storage.download --path="$TEST_BUCKET/$file_name"
-  expect_equals content downloaded
+  expect_equals contents downloaded
 
   // Only authenticated can change the file.
-  content2 := "Hello world 2!".to_byte_array
-  client_auth.storage.upload --path="$TEST_BUCKET/$file_name" --content=content2
+  contents2 := "Hello world 2!".to_byte_array
+  client_auth.storage.upload --path="$TEST_BUCKET/$file_name" --contents=contents2
 
-  content_bad := "BAD".to_byte_array
+  contents_bad := "BAD".to_byte_array
   expect_throws --contains="policy":
-    client_anon.storage.upload --path="$TEST_BUCKET/$file_name" --content=content_bad
+    client_anon.storage.upload --path="$TEST_BUCKET/$file_name" --contents=contents_bad
 
   downloaded = client_auth.storage.download --path="$TEST_BUCKET/$file_name"
-  expect_equals content2 downloaded
+  expect_equals contents2 downloaded
 
   downloaded = client_anon.storage.download --path="$TEST_BUCKET/$file_name"
-  expect_equals content2 downloaded
+  expect_equals contents2 downloaded
 
   // Test storage with public bucket.
   // Only authenticated can download/upload directly, but anon can
   // download through the public URL.
-  client_auth.storage.upload --path="$TEST_BUCKET_PUBLIC/$file_name" --content=content
+  client_auth.storage.upload --path="$TEST_BUCKET_PUBLIC/$file_name" --contents=contents
 
   // Only authenticated can download.
   downloaded = client_auth.storage.download --path="$TEST_BUCKET_PUBLIC/$file_name"
-  expect_equals content downloaded
+  expect_equals contents downloaded
 
   // Anon can not download directly.
   expect_throws --contains="Not found":
@@ -373,14 +373,14 @@ test_storage config/supabase.ServerConfig:
   // Anon can download through the public URL.
   downloaded = client_anon.storage.download --public
       --path="$TEST_BUCKET_PUBLIC/$file_name"
-  expect_equals content downloaded
+  expect_equals contents downloaded
 
   // Upload a file into the private bucket.
   // Auth has write access, but not read access.
   client_auth.storage.upload
       --no-upsert
       --path="$TEST_BUCKET_PRIVATE/$file_name"
-      --content=content
+      --contents=contents
 
   auth_buckets := client_auth.storage.list_buckets
   expect_equals 4 auth_buckets.size
@@ -422,8 +422,8 @@ test_storage config/supabase.ServerConfig:
 
   // The list function is a prefix search.
   // Insert two files with different names.
-  client_auth.storage.upload --path="$TEST_BUCKET/$(file_name)-dir/1" --content=content
-  client_auth.storage.upload --path="$TEST_BUCKET/$(file_name)-dir/2" --content=content
+  client_auth.storage.upload --path="$TEST_BUCKET/$(file_name)-dir/1" --contents=contents
+  client_auth.storage.upload --path="$TEST_BUCKET/$(file_name)-dir/2" --contents=contents
 
   // List all files with the same prefix.
   items = client_auth.storage.list "$TEST_BUCKET/$(file_name)-dir"

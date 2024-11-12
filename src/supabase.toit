@@ -575,11 +575,17 @@ class Storage:
   //    should be as simple as "$url/storage/v1/object/public/$path"
 
   /**
+  Deprecated. Use $(upload --path --contents) instead.
+  */
+  upload --path/string --content/ByteArray --upsert/bool=true -> none:
+    upload --path=path --contents=content --upsert=upsert
+
+  /**
   Uploads data to the storage.
 
   If $upsert is true, then the data is overwritten if it already exists.
   */
-  upload --path/string --content/ByteArray --upsert/bool=true -> none:
+  upload --path/string --contents/ByteArray --upsert/bool=true -> none:
     headers := http.Headers
     if upsert: headers.add "x-upsert" "true"
     headers.add "Content-Type" "application/octet-stream"
@@ -587,7 +593,7 @@ class Storage:
         --method=http.POST
         --headers=headers
         --path="/storage/v1/object/$path"
-        --payload=content
+        --payload=contents
         --parse_response_json=false
 
   /**
