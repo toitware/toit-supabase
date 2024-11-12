@@ -7,12 +7,10 @@ import host.os
 import supabase
 
 class Config implements supabase.ServerConfig:
-  host/string
+  uri/string
   anon/string
 
-  constructor --.host --.anon:
-  root_certificate_name -> string?: return null
-  root_certificate_der -> ByteArray?: return null
+  constructor --.uri --.anon:
 
 get_supabase_config --sub_directory/string -> supabase.ServerConfig:
   anon_key/string? := null
@@ -30,10 +28,9 @@ get_supabase_config --sub_directory/string -> supabase.ServerConfig:
   if not anon_key or not api_url:
     throw "Could not get supabase info"
 
-  host := api_url.trim --left "http://"
-  print_on_stderr_ "HOST: $host ANON_KEY: $anon_key"
+  print_on_stderr_ "URI: $api_url ANON_KEY: $anon_key"
   name := sub_directory.trim --left "../"
-  return Config --host=host --anon=anon_key
+  return Config --uri=api_url --anon=anon_key
 
 get_supabase_service_key --sub_directory/string -> string:
   out := get_status_ sub_directory

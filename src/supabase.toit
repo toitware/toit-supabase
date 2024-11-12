@@ -16,10 +16,8 @@ import .utils_ as utils
 import .filter show Filter
 
 interface ServerConfig:
-  host -> string
+  uri -> string
   anon -> string
-  root_certificate_name -> string?
-  root_certificate_der -> ByteArray?
 
 /**
 An interface for interactions with the user.
@@ -50,9 +48,9 @@ class Client:
   network_to_close_/net.Interface? := null
 
   /**
-  The host of the Supabase project.
+  The URL of the Supabase project.
   */
-  host_/string
+  uri_/string
 
   /**
   The anonymous key of the Supabase project.
@@ -67,10 +65,10 @@ class Client:
   auth_/Auth? := null
 
   constructor network/net.Interface?=null
-      --host/string
+      --uri/string
       --anon/string
       --local_storage/LocalStorage=NoLocalStorage:
-    host_ = host
+    uri_ = uri
     anon_ = anon
 
     if not network:
@@ -80,46 +78,13 @@ class Client:
     local_storage_ = local_storage
     add_finalizer this:: close
 
-  constructor.tls network/net.Interface?=null
-      --host/string
-      --anon/string
-      --root_certificates/List=[]
-      --local_storage/LocalStorage=NoLocalStorage:
-    host_ = host
-    anon_ = anon
-
-    if not network:
-      network = network_to_close_ = net.open
-
-    http_client_ = http.Client.tls network --root_certificates=root_certificates
-    local_storage_ = local_storage
-    add_finalizer this:: close
-
   constructor network/net.Interface?=null
       --server_config/ServerConfig
-      --local_storage/LocalStorage=NoLocalStorage
-      [--certificate_provider]:
-    root_certificate := server_config.root_certificate_der
-    if not root_certificate and server_config.root_certificate_name:
-      root_certificate = certificate_provider.call server_config.root_certificate_name
-
-    if root_certificate:
-      root_certificate_der := ?
-      if root_certificate is tls.RootCertificate:
-        root_certificate_der = (root_certificate as tls.RootCertificate).raw
-      else:
-        root_certificate_der = root_certificate
-      certificate := x509.Certificate.parse root_certificate_der
-      return Client.tls network
+      --local_storage/LocalStorage=NoLocalStorage:
+    return Client network
           --local_storage=local_storage
-          --host=server_config.host
+          --uri=server_config.uri
           --anon=server_config.anon
-          --root_certificates=[certificate]
-    else:
-      return Client network
-          --host=server_config.host
-          --anon=server_config.anon
-          --local_storage=local_storage
 
   /**
   Ensures that the user is authenticated.
@@ -258,43 +223,25 @@ class Client:
     else if query:
       path = "$path?$query"
 
-    host := host_
-    port := null
-    colon_pos := host.index_of ":"
-    if colon_pos >= 0:
-      host = host_[..colon_pos]
-      port = int.parse host_[colon_pos + 1..]
-
+    uri := "$uri_$path"
     response/http.Response := ?
     if method == http.GET:
       if payload: throw "GET requests cannot have a payload"
-      response = http_client_.get --host=host --port=port --path=path --headers=headers
+      response = http_client_.get --uri=uri --headers=headers
     else if method == http.PATCH or method == http.DELETE or method == http.PUT:
       // TODO(florian): the http client should support PATCH.
       // TODO(florian): we should only do this if the payload is a Map.
       encoded := json.encode payload
       headers.set "Content-Type" "application/json"
-      request := http_client_.new_request method
-          --host=host
-          --port=port
-          --path=path
-          --headers=headers
+      request := http_client_.new_request --uri=uri --headers=headers method
       request.body = io.Reader encoded
       response = request.send
     else:
       if method != http.POST: throw "UNIMPLEMENTED"
       if payload is Map:
-        response = http_client_.post_json payload
-            --host=host
-            --port=port
-            --path=path
-            --headers=headers
+        response = http_client_.post_json --uri=uri --headers=headers payload
       else:
-        response = http_client_.post payload
-            --host=host
-            --port=port
-            --path=path
-            --headers=headers
+        response = http_client_.post --uri=uri --headers=headers payload
 
     return response
 
@@ -622,8 +569,8 @@ class Storage:
       headers = http.Headers
       headers.add "Range" "bytes=$offset-$end"
     full_path := public
-        ? "storage/v1/object/public/$path"
-        : "storage/v1/object/$path"
+        ? "/storage/v1/object/public/$path"
+        : "/storage/v1/object/$path"
     response := client_.request_ --raw_response
         --method=http.GET
         --path=full_path
@@ -677,4 +624,4 @@ class Storage:
   Computes the public URL for the given $path.
   */
   public_url_for --path/string -> string:
-    return "$client_.host_/storage/v1/object/public/$path"
+    return "$client_.uri_/storage/v1/object/public/$path"
