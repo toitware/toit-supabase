@@ -37,8 +37,8 @@ class ConfigLocalStorage implements supabase.LocalStorage:
   constructor --app_name/string --auth_key/string="":
     path_ = "$config_home/$app_name/auth"
     if file.is_file path_:
-      content := file.read_content path_
-      config_ = json.decode content
+      contents := file.read_contents path_
+      config_ = json.decode contents
     else:
       config_ = {:}
     auth_key_ = auth_key

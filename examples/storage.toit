@@ -10,7 +10,7 @@ import .utils.client
 // See the project in the supabase directory for an example.
 main:
   client := instantiate_client
-  client.storage.upload --path="test-demo-public/bar.txt" --content=#['h', 'e', 'l', 'l', 'o']
+  client.storage.upload --path="test-demo-public/bar.txt" --contents=#['h', 'e', 'l', 'l', 'o']
   data := client.storage.download --path="test-demo-public/bar.txt"
   print data.to_string
 
