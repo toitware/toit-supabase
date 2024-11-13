@@ -2,6 +2,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file.
 
+import desktop
 import http
 import host.pipe
 import log
@@ -115,43 +116,7 @@ class Auth:
           --provider=provider
 
       ui.info "Please authenticate at $authenticate_url"
-      if open_browser:
-        catch:
-          command/string? := null
-          args/List? := null
-          if platform == PLATFORM_LINUX:
-            command = "xdg-open"
-            args = [ authenticate_url ]
-          else if platform == PLATFORM_MACOS:
-            command = "open"
-            args = [ authenticate_url ]
-          else if platform == PLATFORM_WINDOWS:
-            command = "cmd"
-            escaped_url := authenticate_url.replace "&" "^&"
-            args = [ "/c", "start", escaped_url ]
-          // If we have a supported platform try to open the URL.
-          // For all other platforms we already printed the URL to the console.
-          if command != null:
-            fork_data := pipe.fork
-                true  // Use path.
-                pipe.PIPE_CREATED  // Stdin.
-                pipe.PIPE_CREATED  // Stdout.
-                pipe.PIPE_CREATED  // Stderr.
-                command
-                [ command ] + args
-            pid := fork_data[3]
-            task --background::
-              // The 'open' command should finish in almost no time.
-              // Even if it doesn't, then the CLI almost always terminates
-              // shortly after calling 'open'.
-              // However, if we modify the CLI, so it becomes long-running (for
-              // example inside a server), we need to make sure we don't keep
-              // spawned processes around.
-              exception := catch: with_timeout --ms=20_000:
-                pipe.wait_for pid
-              if exception == DEADLINE_EXCEEDED_ERROR:
-                SIGKILL ::= 9
-                catch: pipe.kill_ pid SIGKILL
+      if open_browser: desktop.open-browser authenticate-url
 
       session_latch := monitor.Latch
       server_task := task::
