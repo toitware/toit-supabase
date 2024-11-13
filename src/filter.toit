@@ -16,7 +16,7 @@ Functions in this library create $Filter objects that can be used
   returned by the database.
 
 Most of the functionality can be accessed through convenience functions,
-  such as $equals, $less_than, or similar. More complex functionality
+  such as $equals, $less-than, or similar. More complex functionality
   might need direct calls to the $Filter constructors. Specifically,
   $Filter.raw allows one to create any filter.
 
@@ -47,7 +47,7 @@ Creates a filter for the 'equals' operation that tests whether
 Maps to the PostgreSQL `=` operator, and the PostgREST `eq` operator.
 
 If the the $value or the column-value is null, then the result of the comparison is null.
-Use $is_null or $iss to test for `null` values.
+Use $is-null or $iss to test for `null` values.
 */
 equals column/string value/any -> Filter:
   return Filter.binary column Filter.EQ value
@@ -59,9 +59,9 @@ Creates a filter for the 'not equals' operation that tests whether
 Maps to the PostgreSQL `<>` operator, and the PostgREST `neq` operator.
 
 If the $value or column-value is null, then the result of the comparison is null.
-Use $is_null or $iss to test for `null` values.
+Use $is-null or $iss to test for `null` values.
 */
-not_equals column/string value/any -> Filter:
+not-equals column/string value/any -> Filter:
   return Filter.binary column Filter.NEQ value
 
 /**
@@ -72,7 +72,7 @@ Maps to the PostgreSQL `>` operator, and the PostgREST `gt` operator.
 
 If the $value or column-value is null, then the result of the comparison is null.
 */
-greater_than column/string value/any -> Filter:
+greater-than column/string value/any -> Filter:
   return Filter.binary column Filter.GT value
 
 /**
@@ -83,7 +83,7 @@ Maps to the PostgreSQL `>=` operator, and the PostgREST `gte` operator.
 
 If the $value or column-value is null, then the result of the comparison is null.
 */
-greater_than_or_equal column/string value/any -> Filter:
+greater-than-or-equal column/string value/any -> Filter:
   return Filter.binary column Filter.GTE value
 
 /**
@@ -94,7 +94,7 @@ Maps to the PostgreSQL `<` operator, and the PostgREST `lt` operator.
 
 If the $value or column-value is null, then the result of the comparison is null.
 */
-less_than column/string value/any -> Filter:
+less-than column/string value/any -> Filter:
   return Filter.binary column Filter.LT value
 
 /**
@@ -105,7 +105,7 @@ Maps to the PostgreSQL `<=` operator, and the PostgREST `lte` operator.
 
 If the $value or column-value is null, then the result of the comparison is null.
 */
-less_than_or_equal column/string value/any -> Filter:
+less-than-or-equal column/string value/any -> Filter:
   return Filter.binary column Filter.LTE value
 
 /**
@@ -170,7 +170,7 @@ Creates a filter for the 'is' operation that tests whether
   the given $column is the given $value.
 
 Typically used to test for null or boolean values. For
-  null, use $is_null instead.
+  null, use $is-null instead.
 
 The result of the comparison is always a boolean, even if
   the $value or column-value is null. This is especially
@@ -193,8 +193,8 @@ Variant of $iss.
 
 Tests whether the given $column is not the given $value.
 */
-is_distinct column/string value/any -> Filter:
-  return Filter.binary column Filter.IS_DISTINCT value
+is-distinct column/string value/any -> Filter:
+  return Filter.binary column Filter.IS-DISTINCT value
 
 /**
 Creates a filter for the 'is' operation where the given $column is
@@ -202,16 +202,16 @@ Creates a filter for the 'is' operation where the given $column is
 
 See $iss.
 */
-is_null column/string -> Filter:
+is-null column/string -> Filter:
   return iss column null
 
 /**
 Creates a filter for the 'is' operation where the given $column is
   checked for not null.
 */
-is_not_null column/string -> Filter:
+is-not-null column/string -> Filter:
   // We don't use `is_distinct` due to https://github.com/PostgREST/postgrest/issues/2879.
-  return nott (is_null column)
+  return nott (is-null column)
 
 /**
 Creates a filter for the 'contains' operation that tests whether
@@ -224,8 +224,8 @@ contains column/string values/List -> Filter:
 Creates a filter for the 'contained in' operation that tests whether
   the array of the given $column is contained in the given $values.
 */
-contained_in column/string values/List -> Filter:
-  return Filter.array column Filter.CONTAINED_IN values
+contained-in column/string values/List -> Filter:
+  return Filter.array column Filter.CONTAINED-IN values
 
 /**
 Creates a filter for the 'overlaps' operation that tests whether
@@ -283,17 +283,17 @@ interface Filter:
   static MATCH ::= "match"
   static IMATCH ::= "imatch"
   static IS ::= "is"
-  static IS_DISTINCT ::= "isdistinct"
+  static IS-DISTINCT ::= "isdistinct"
 
   static IN ::= "in"
 
   static CONTAINS ::= "cs"
-  static CONTAINED_IN ::= "cd"
+  static CONTAINED-IN ::= "cd"
   static OVERLAPS ::= "ov"
-  static STRICTLY_LEFT ::= "sl"
-  static STRICTLY_RIGHT ::= "sr"
-  static NOT_EXTEND_RIGHT ::= "nxr"
-  static NOT_EXTEND_LEFT ::= "nxl"
+  static STRICTLY-LEFT ::= "sl"
+  static STRICTLY-RIGHT ::= "sr"
+  static NOT-EXTEND-RIGHT ::= "nxr"
+  static NOT-EXTEND-LEFT ::= "nxl"
   static ADJACENT ::= "adj"
 
   static AND ::= "and"
@@ -303,30 +303,30 @@ interface Filter:
 
   /**
   Encodes the given $value.
-  If $may_quote is true, then the value is quoted if necessary. This is
+  If $may-quote is true, then the value is quoted if necessary. This is
     only allowed for nested expressions, and not for the top-level filter.
     For example, `foo=eq.<some-value>` must not be quoted, but
     `or=(foo.eq.<some-value>)` may need to be quoted (and in this case
     quoting never hurts).
   */
-  static encode value --may_quote/bool -> string:
+  static encode value --may-quote/bool -> string:
     stringified := "$value"
 
     // It's not completely clear if float values with '.' must be quoted,
     // but in doubt we quote them.
-    if may_quote and value is string:
+    if may-quote and value is string:
       // See https://postgrest.org/en/stable/references/api/url_grammar.html#reserved-characters.
       // Values that contain ',', '.', ':', or '()' must be quoted.
       // In theory it's not necessary to quote values that only contain '"' or '\' (unless
       // it starts and ends the string), but that feels extremely wrong and dangerous.
       // Once a value is quoted any '\' or '"' must be escaped.
-      needs_quoting := false
+      needs-quoting := false
       for i := 0; i < stringified.size; i++:
         c := stringified[i]
         if c == ',' or c == '.' or c == ':' or c == '(' or c == ')' or c == '"' or c == '\\':
-          needs_quoting = true
+          needs-quoting = true
           break
-      if needs_quoting:
+      if needs-quoting:
         // Escape '\' and '"'.
         stringified = stringified.replace --all "\\" "\\\\"
         stringified = stringified.replace --all "\"" "\\\""
@@ -334,14 +334,14 @@ interface Filter:
 
     return url.encode stringified
 
-  static encode_column column/string -> string:
+  static encode-column column/string -> string:
     if column == "or" or column == "and":
       // A leading `or` or `and` would be confused with the logical operators.
       return "\"$column\""
 
     // Column names can be pretty much any string, so make sure we escape them
     // correctly.
-    return encode column --may_quote
+    return encode column --may-quote
 
 
   /**
@@ -350,7 +350,7 @@ interface Filter:
   The operator must be one of the following:
     $EQ, $NEQ, $GT, $GTE, $LT, $LTE, $LIKE, $ILIKE, $MATCH, $IMATCH, $IS.
 
-  See $equals, $not_equals, ... for documentation on each operator.
+  See $equals, $not-equals, ... for documentation on each operator.
   */
   constructor.binary column/string op/string value/any:
     return FilterBinary_ column op value
@@ -367,7 +367,7 @@ interface Filter:
   Creates an array filter.
 
   The operator must be one of the following:
-    $CONTAINS, $CONTAINED_IN, $OVERLAPS.
+    $CONTAINS, $CONTAINED-IN, $OVERLAPS.
 
   The given $values are encoded using `{...}` in the PostgREST request.
   */
@@ -378,7 +378,7 @@ interface Filter:
   Creates a range filter.
 
   The operator must be one of the following:
-    $CONTAINS, $CONTAINED_IN, $OVERLAPS.
+    $CONTAINS, $CONTAINED-IN, $OVERLAPS.
 
   The $from and $to values must be either a number or a $Time.
   The range is encoded as `[from, to]` in the PostgREST request.
@@ -409,7 +409,7 @@ interface Filter:
   Creates a raw filter.
 
   The $raw string must be properly encoded and escaped. Use $encode to encode values.
-  Similarly, some characters in column names must be escaped. Use $encode_column to
+  Similarly, some characters in column names must be escaped. Use $encode-column to
     encode column names.
 
   # Example:
@@ -449,7 +449,7 @@ interface Filter:
 
   The result is already properly encoded and escaped.
   */
-  to_string --nested/bool --negated/bool -> string
+  to-string --nested/bool --negated/bool -> string
 
 class FilterBinary_ implements Filter:
   column/string
@@ -458,11 +458,11 @@ class FilterBinary_ implements Filter:
 
   constructor .column .op .value:
 
-  to_string --nested/bool --negated/bool -> string:
-    not_string := negated ? "not." : ""
-    column_string := Filter.encode_column column
-    encoded_value := Filter.encode value --may_quote=nested
-    return "$column_string$(nested ? "." : "=")$not_string$op.$encoded_value"
+  to-string --nested/bool --negated/bool -> string:
+    not-string := negated ? "not." : ""
+    column-string := Filter.encode-column column
+    encoded-value := Filter.encode value --may-quote=nested
+    return "$column-string$(nested ? "." : "=")$not-string$op.$encoded-value"
 
 class FilterIn_ implements Filter:
   column/string
@@ -470,12 +470,12 @@ class FilterIn_ implements Filter:
 
   constructor .column .values:
 
-  to_string --nested/bool --negated/bool -> string:
-    not_string := negated ? "not." : ""
-    column_string := Filter.encode_column column
-    encoded_values := values.map: Filter.encode it --may_quote
-    joined := encoded_values.join ","
-    return "$column_string$(nested ? "." : "=")$not_string$Filter.IN.($joined)"
+  to-string --nested/bool --negated/bool -> string:
+    not-string := negated ? "not." : ""
+    column-string := Filter.encode-column column
+    encoded-values := values.map: Filter.encode it --may-quote
+    joined := encoded-values.join ","
+    return "$column-string$(nested ? "." : "=")$not-string$Filter.IN.($joined)"
 
 class FilterArray_ implements Filter:
   column/string
@@ -484,12 +484,12 @@ class FilterArray_ implements Filter:
 
   constructor .column .op .values:
 
-  to_string --nested/bool --negated/bool -> string:
-    not_string := negated ? "not." : ""
-    column_string := Filter.encode_column column
-    encoded_values := values.map: Filter.encode it --may_quote
-    joined := encoded_values.join ","
-    return "$column_string$(nested ? "." : "=")$not_string$op.{$joined}"
+  to-string --nested/bool --negated/bool -> string:
+    not-string := negated ? "not." : ""
+    column-string := Filter.encode-column column
+    encoded-values := values.map: Filter.encode it --may-quote
+    joined := encoded-values.join ","
+    return "$column-string$(nested ? "." : "=")$not-string$op.{$joined}"
 
 class FilterRange_ implements Filter:
   column/string
@@ -501,12 +501,12 @@ class FilterRange_ implements Filter:
     if not (from is num and to is num) and not (from is Time and to is Time):
       throw "INVALID_ARGUMENT"
 
-  to_string --nested/bool --negated/bool -> string:
-    not_string := negated ? "not." : ""
-    column_string := Filter.encode_column column
-    encoded_from := Filter.encode from --may_quote
-    encoded_to := Filter.encode to --may_quote
-    return "$column_string$(nested ? "." : "=")$not_string$op.($encoded_from,$encoded_to)"
+  to-string --nested/bool --negated/bool -> string:
+    not-string := negated ? "not." : ""
+    column-string := Filter.encode-column column
+    encoded-from := Filter.encode from --may-quote
+    encoded-to := Filter.encode to --may-quote
+    return "$column-string$(nested ? "." : "=")$not-string$op.($encoded-from,$encoded-to)"
 
 class FilterLogical_ implements Filter:
   op/string
@@ -514,37 +514,37 @@ class FilterLogical_ implements Filter:
 
   constructor .op .filters:
 
-  to_string --nested/bool --negated/bool -> string:
-    prefix_string/string := ?
+  to-string --nested/bool --negated/bool -> string:
+    prefix-string/string := ?
     if negated and nested:
-      prefix_string = "$(Filter.NOT).$op"
+      prefix-string = "$(Filter.NOT).$op"
     else if negated and not nested:
-      prefix_string = "$(Filter.NOT)=$op"
+      prefix-string = "$(Filter.NOT)=$op"
     else if not negated and nested:
-      prefix_string = "$op"
+      prefix-string = "$op"
     else:
       assert: not negated and not nested
-      prefix_string = "$op="
-    nested_strings := filters.map: it.to_string --nested --negated=false
-    joined := nested_strings.join ","
-    return "$prefix_string($joined)"
+      prefix-string = "$op="
+    nested-strings := filters.map: it.to-string --nested --negated=false
+    joined := nested-strings.join ","
+    return "$prefix-string($joined)"
 
 class FilterNot_ implements Filter:
   filter/Filter
 
   constructor .filter:
 
-  to_string --nested/bool --negated/bool -> string:
+  to-string --nested/bool --negated/bool -> string:
     // The 'not' must be put in front of the operator. As such we
     // can't just prefix it to the stringified filter.
-    return filter.to_string --nested=nested --negated=(not negated)
+    return filter.to-string --nested=nested --negated=(not negated)
 
 class FilterRaw_ implements Filter:
   raw/string
 
   constructor .raw:
 
-  to_string --nested/bool --negated/bool -> string:
+  to-string --nested/bool --negated/bool -> string:
     if nested or negated:
       throw "RAW_MUST_NOT_BE_NESTED"
     return raw

@@ -23,47 +23,47 @@ class Auth:
   Computes an OAuth URL for the given $provider.
 
   The user should follow the URL and authenticate there. They are then redirected to
-    the given $redirect_url, which must extract the session information.
+    the given $redirect-url, which must extract the session information.
 
-  Use $finish_oauth_sign_in to provide the returned information to this instance.
+  Use $finish-oauth-sign-in to provide the returned information to this instance.
   */
-  compute_authenticate_url --redirect_url/string --provider/string -> string:
-    return "$(client_.uri_)/auth/v1/authorize?provider=$provider&redirect_to=$redirect_url"
+  compute-authenticate-url --redirect-url/string --provider/string -> string:
+    return "$(client_.uri_)/auth/v1/authorize?provider=$provider&redirect_to=$redirect-url"
 
   /**
   Finishes the OAuth sign-in.
 
-  When the user authenticates on an URL that is provided by $compute_authenticate_url,
+  When the user authenticates on an URL that is provided by $compute-authenticate-url,
     then they are redirected to another URL with the authentication information in the
     hash part of the URL. The page should change this to a query part and then call this
     method with the path of the URL.
   */
-  finish_oauth_sign_in path/string -> none:
+  finish-oauth-sign-in path/string -> none:
     // Extract the session information.
-    question_mark_pos := path.index_of "?"
-    path = path[question_mark_pos + 1..]
-    query_parameters := {:}
+    question-mark-pos := path.index-of "?"
+    path = path[question-mark-pos + 1..]
+    query-parameters := {:}
     parts := path.split "&"
     parts.do: | part |
-      equals_pos := part.index_of "="
-      key := part[..equals_pos]
-      value := part[equals_pos + 1..]
-      query_parameters[key] = value
+      equals-pos := part.index-of "="
+      key := part[..equals-pos]
+      value := part[equals-pos + 1..]
+      query-parameters[key] = value
 
-    access_token := query_parameters["access_token"]
-    expires_in := int.parse query_parameters["expires_in"]
-    refresh_token := query_parameters["refresh_token"]
-    token_type := query_parameters["token_type"]
+    access-token := query-parameters["access_token"]
+    expires-in := int.parse query-parameters["expires_in"]
+    refresh-token := query-parameters["refresh_token"]
+    token-type := query-parameters["token_type"]
 
     session := Session_
-        --access_token=access_token
-        --expires_in_s=expires_in
-        --refresh_token=refresh_token
-        --token_type=token_type
+        --access-token=access-token
+        --expires-in-s=expires-in
+        --refresh-token=refresh-token
+        --token-type=token-type
 
-    client_.set_session_ session
+    client_.set-session_ session
 
-  sign_up --email/string --password/string -> none:
+  sign-up --email/string --password/string -> none:
     response := client_.request_
         --method=http.POST
         --path="/auth/v1/signup"
@@ -77,7 +77,7 @@ class Auth:
         if (user.get "email") == email: return
     throw "Failed to sign up"
 
-  sign_in --email/string --password/string -> none:
+  sign-in --email/string --password/string -> none:
     response := client_.request_
         --method=http.POST
         --path="/auth/v1/token"
@@ -85,51 +85,51 @@ class Auth:
           "email": email,
           "password": password,
         }
-        --query_parameters={
+        --query-parameters={
           "grant_type": "password",
         }
     session := Session_
-        --access_token=response["access_token"]
-        --expires_in_s=response["expires_in"]
-        --refresh_token=response["refresh_token"]
-        --token_type=response["token_type"]
-    client_.set_session_ session
+        --access-token=response["access_token"]
+        --expires-in-s=response["expires_in"]
+        --refresh-token=response["refresh_token"]
+        --token-type=response["token_type"]
+    client_.set-session_ session
 
   /**
   Signs in using an Oauth provider.
 
   The user is redirected to the provider's authentication page and then back to the
     a localhost URL so that the program can receive the access token. If a
-    $redirect_url is provided, the page redirects to that URL afterwards with the
+    $redirect-url is provided, the page redirects to that URL afterwards with the
     same fragment that this program received. This can be used to provide nicer
     success or error messages.
   */
-  sign_in --provider/string --ui/Ui --open_browser/bool=true --redirect_url/string?=null -> none:
+  sign-in --provider/string --ui/Ui --open-browser/bool=true --redirect-url/string?=null -> none:
     network := net.open
     try:
-      server_socket := network.tcp_listen 0
-      server := http.Server --logger=(log.default.with_level log.FATAL_LEVEL)
-      port := server_socket.local_address.port
+      server-socket := network.tcp-listen 0
+      server := http.Server --logger=(log.default.with-level log.FATAL-LEVEL)
+      port := server-socket.local-address.port
 
-      authenticate_url := compute_authenticate_url
-          --redirect_url="http://localhost:$port/auth"
+      authenticate-url := compute-authenticate-url
+          --redirect-url="http://localhost:$port/auth"
           --provider=provider
 
-      ui.info "Please authenticate at $authenticate_url"
-      if open_browser: desktop.open-browser authenticate-url
+      ui.info "Please authenticate at $authenticate-url"
+      if open-browser: desktop.open-browser authenticate-url
 
-      session_latch := monitor.Latch
-      server_task := task::
-        server.listen server_socket:: | request/http.Request writer/http.ResponseWriter |
+      session-latch := monitor.Latch
+      server-task := task::
+        server.listen server-socket:: | request/http.Request writer/http.ResponseWriter |
           out := writer.out
-          if request.path.starts_with "/success":
-            finish_oauth_sign_in request.path
+          if request.path.starts-with "/success":
+            finish-oauth-sign-in request.path
             out.write "You can close this window now."
-            session_latch.set true
-          else if request.path.starts_with "/auth":
-            redirect_code := ""
-            if redirect_url:
-              redirect_code = """window.location.href = "$redirect_url" + window.location.hash;"""
+            session-latch.set true
+          else if request.path.starts-with "/auth":
+            redirect-code := ""
+            if redirect-url:
+              redirect-code = """window.location.href = "$redirect-url" + window.location.hash;"""
             out.write """
             <html>
               <body>
@@ -140,7 +140,7 @@ class Auth:
                   const req = new XMLHttpRequest();
                   req.addEventListener("load", function() {
                     document.getElementById("body").innerHTML = "You can close this window now.";
-                    $redirect_code
+                    $redirect-code
                   });
                   req.open("GET", "http://localhost:$port/success?" + window.location.hash.substring(1));
                   req.send();
@@ -152,9 +152,9 @@ class Auth:
           else:
             out.write "Invalid request."
 
-      session_latch.get
+      session-latch.get
       sleep --ms=1  // Give the server time to respond with the success message.
-      server_task.cancel
+      server-task.cancel
     finally:
       network.close
 
@@ -168,31 +168,31 @@ class Auth:
         --method=http.POST
         --path="/auth/v1/logout"
         --payload=#[]
-    client_.set_session_ null
+    client_.set-session_ null
     return response
 
-  refresh_token:
+  refresh-token:
     if not client_.session_: throw "No session available."
     response := client_.request_
         --method=http.POST
         --path="/auth/v1/token"
-        --query_parameters={
+        --query-parameters={
           "grant_type": "refresh_token",
         }
         --payload={
-          "refresh_token": client_.session_.refresh_token,
+          "refresh_token": client_.session_.refresh-token,
         }
     session := Session_
-        --access_token=response["access_token"]
-        --expires_in_s=response["expires_in"]
-        --refresh_token=response["refresh_token"]
-        --token_type=response["token_type"]
-    client_.set_session_ session
+        --access-token=response["access_token"]
+        --expires-in-s=response["expires_in"]
+        --refresh-token=response["refresh_token"]
+        --token-type=response["token_type"]
+    client_.set-session_ session
 
   /**
   Sends a reauthentication OTP to the user's email or phone number.
 
-  The nonce can be used in an $update_current_user call when updating a
+  The nonce can be used in an $update-current-user call when updating a
     user's password.
 
   A reauthentication is only needed if the "Secure password change" is
@@ -212,7 +212,7 @@ class Auth:
   Returns the currently authenticated user.
   */
   // TODO(florian): We should have this information cached when we sign in.
-  get_current_user -> Map?:
+  get-current-user -> Map?:
     if not client_.session_: throw "No session available."
     response := client_.request_
         --method=http.GET
@@ -245,7 +245,7 @@ class Auth:
     The `app_metadata` should be a JSON object that includes app-specific info, such as
     identity providers, roles, and other access control information.
   */
-  update_current_user data/Map -> none:
+  update-current-user data/Map -> none:
     if not client_.session_: throw "No session available."
     client_.request_
         --method=http.PUT
@@ -253,47 +253,47 @@ class Auth:
         --payload=data
 
 class Session_:
-  access_token/string
+  access-token/string
 
-  expires_at/Time
+  expires-at/Time
 
-  refresh_token/string
-  token_type/string
+  refresh-token/string
+  token-type/string
 
   /**
   Constructs a new session.
 
-  The $expires_in_s is the number of seconds until the access token expires
+  The $expires-in-s is the number of seconds until the access token expires
     after it was issued. We assume that the token was issued at the time of
     the call to the constructor.
   */
   constructor
-      --.access_token
-      --expires_in_s
-      --.refresh_token
-      --.token_type:
-    expires_at = Time.now + (Duration --s=expires_in_s)
+      --.access-token
+      --expires-in-s
+      --.refresh-token
+      --.token-type:
+    expires-at = Time.now + (Duration --s=expires-in-s)
 
-  constructor.from_json json/Map:
+  constructor.from-json json/Map:
     // TODO(florian): remove backwards-compatibility code.
-    expires_in := json.get "expires_in"
-    expires_at_epoch_ms := json.get "expires_at_epoch_ms"
-    if expires_in and not expires_at_epoch_ms:
+    expires-in := json.get "expires_in"
+    expires-at-epoch-ms := json.get "expires_at_epoch_ms"
+    if expires-in and not expires-at-epoch-ms:
       // Simply make it such that the token has expired.
       // After all, we don't know when the token was issued.
-      expires_at_epoch_ms = 0
-    access_token = json["access_token"]
-    expires_at = Time.epoch --ms=expires_at_epoch_ms
-    refresh_token = json["refresh_token"]
-    token_type = json["token_type"]
+      expires-at-epoch-ms = 0
+    access-token = json["access_token"]
+    expires-at = Time.epoch --ms=expires-at-epoch-ms
+    refresh-token = json["refresh_token"]
+    token-type = json["token_type"]
 
-  to_json -> Map:
+  to-json -> Map:
     return {
-      "access_token": access_token,
-      "expires_at_epoch_ms": expires_at.ms_since_epoch,
-      "refresh_token": refresh_token,
-      "token_type": token_type,
+      "access_token": access-token,
+      "expires_at_epoch_ms": expires-at.ms-since-epoch,
+      "refresh_token": refresh-token,
+      "token_type": token-type,
     }
 
-  has_expired --min_remaining/Duration=Duration.ZERO -> bool:
-    return Time.now + min_remaining > expires_at
+  has-expired --min-remaining/Duration=Duration.ZERO -> bool:
+    return Time.now + min-remaining > expires-at

@@ -10,10 +10,10 @@ class Ui implements supabase.Ui:
     print "Info: $message"
 
 login args/List:
-  client := instantiate_client
+  client := instantiate-client
   // Providers must be enabled in the Supabase dashboard.
   // See https://supabase.com/docs/guides/auth
-  client.auth.sign_in --provider="github" --open_browser --ui=Ui
+  client.auth.sign-in --provider="github" --open-browser --ui=Ui
   print "Logged in"
 
 main args:
@@ -24,8 +24,8 @@ main args:
       login args
       return
 
-  client := instantiate_client
-  client.ensure_authenticated: | reason/string |
+  client := instantiate-client
+  client.ensure-authenticated: | reason/string |
     print "Authentication failure: $reason"
     exit 1
 
