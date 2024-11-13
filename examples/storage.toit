@@ -9,10 +9,10 @@ import .utils.client
 // in the Supabase project.
 // See the project in the supabase directory for an example.
 main:
-  client := instantiate_client
+  client := instantiate-client
   client.storage.upload --path="test-demo-public/bar.txt" --contents=#['h', 'e', 'l', 'l', 'o']
   data := client.storage.download --path="test-demo-public/bar.txt"
-  print data.to_string
+  print data.to-string
 
-  public_url := client.storage.public_url_for --path="test-demo-public/bar.txt"
-  print "The public URL is $public_url"
+  public-url := client.storage.public-url-for --path="test-demo-public/bar.txt"
+  print "The public URL is $public-url"

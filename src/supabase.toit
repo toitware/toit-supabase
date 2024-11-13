@@ -5,7 +5,7 @@
 import http
 import net
 import net.x509
-import http.status_codes
+import http.status-codes
 import encoding.json
 import encoding.url
 import io
@@ -37,15 +37,15 @@ For example, the Postgres backend is available through the $rest getter, and
   the storage backend is available through $storage.
 */
 class Client:
-  http_client_/http.Client? := null
-  local_storage_/LocalStorage
+  http-client_/http.Client? := null
+  local-storage_/LocalStorage
   session_/Session_? := null
 
   /**
   The used network interface.
   This field is only set, if the $close function should close the network.
   */
-  network_to_close_/net.Interface? := null
+  network-to-close_/net.Interface? := null
 
   /**
   The URL of the Supabase project.
@@ -67,24 +67,24 @@ class Client:
   constructor network/net.Interface?=null
       --uri/string
       --anon/string
-      --local_storage/LocalStorage=NoLocalStorage:
+      --local-storage/LocalStorage=NoLocalStorage:
     uri_ = uri
     anon_ = anon
 
     if not network:
-      network = network_to_close_ = net.open
+      network = network-to-close_ = net.open
 
-    http_client_ = http.Client network
-    local_storage_ = local_storage
-    add_finalizer this:: close
+    http-client_ = http.Client network
+    local-storage_ = local-storage
+    add-finalizer this:: close
 
   constructor network/net.Interface?=null
-      --server_config/ServerConfig
-      --local_storage/LocalStorage=NoLocalStorage:
+      --server-config/ServerConfig
+      --local-storage/LocalStorage=NoLocalStorage:
     return Client network
-          --local_storage=local_storage
-          --uri=server_config.uri
-          --anon=server_config.anon
+          --local-storage=local-storage
+          --uri=server-config.uri
+          --anon=server-config.anon
 
   /**
   Ensures that the user is authenticated.
@@ -112,17 +112,17 @@ class Client:
     client.auth.sign_in --provider="github" --ui=ui
   ```
   */
-  ensure_authenticated [block]:
+  ensure-authenticated [block]:
     exception := null
-    if local_storage_.has_auth:
+    if local-storage_.has-auth:
       exception = catch:
-        session_ = Session_.from_json local_storage_.get_auth
-        if session_.has_expired --min_remaining=(Duration --m=20):
-          auth.refresh_token
+        session_ = Session_.from-json local-storage_.get-auth
+        if session_.has-expired --min-remaining=(Duration --m=20):
+          auth.refresh-token
         return
       // There was an exception.
       // Clear the stored session, and run the block for a fresh authentication.
-      local_storage_.remove_auth
+      local-storage_.remove-auth
     reason := ?
     if exception:
       reason = "Error while refreshing the authentication: $exception"
@@ -131,16 +131,16 @@ class Client:
     block.call reason
 
   close -> none:
-    if not http_client_: return
-    remove_finalizer this
-    http_client_.close
-    http_client_ = null
-    if network_to_close_:
-      network_to_close_.close
-      network_to_close_ = null
+    if not http-client_: return
+    remove-finalizer this
+    http-client_.close
+    http-client_ = null
+    if network-to-close_:
+      network-to-close_.close
+      network-to-close_ = null
 
-  is_closed -> bool:
-    return http_client_ == null
+  is-closed -> bool:
+    return http-client_ == null
 
   rest -> PostgRest:
     if not rest_: rest_ = PostgRest this
@@ -154,14 +154,14 @@ class Client:
     if not auth_: auth_ = Auth this
     return auth_
 
-  set_session_ session/Session_?:
+  set-session_ session/Session_?:
     session_ = session
     if session:
-      local_storage_.set_auth session.to_json
+      local-storage_.set-auth session.to-json
     else:
-      local_storage_.remove_auth
+      local-storage_.remove-auth
 
-  is_success_status_code_ code/int -> bool:
+  is-success-status-code_ code/int -> bool:
     return 200 <= code <= 299
 
   /**
@@ -173,29 +173,29 @@ class Client:
   Query parameters can be provided in two ways:
   - with the $query parameter is a string that is appended to the path. It must
     be properly URL encoded (also known as percent-encoding), or
-  - with the $query_parameters parameter, which is a map from keys to values.
+  - with the $query-parameters parameter, which is a map from keys to values.
     The value for each key must be a string or a list of strings. In the latter
     case, each value is added as a separate query parameter.
-  It is an error to provide both $query and $query_parameters.
+  It is an error to provide both $query and $query-parameters.
   */
-  request_ --raw_response/bool -> http.Response
+  request_ --raw-response/bool -> http.Response
       --path/string
       --method/string
       --bearer/string? = null
       --query/string? = null
-      --query_parameters/Map? = null
+      --query-parameters/Map? = null
       --headers/http.Headers? = null
       --payload/any = null
       --schema/string? = null:
 
-    if query and query_parameters:
+    if query and query-parameters:
       throw "Cannot provide both query and query_parameters"
 
     headers = headers ? headers.copy : http.Headers
 
     if not bearer:
       if not session_: bearer = anon_
-      else: bearer = session_.access_token
+      else: bearer = session_.access-token
     headers.set "Authorization" "Bearer $bearer"
 
     headers.add "apikey" anon_
@@ -206,20 +206,20 @@ class Client:
       else:
         headers.add "Content-Profile" schema
 
-    question_mark_pos := path.index_of "?"
-    if question_mark_pos >= 0:
+    question-mark-pos := path.index-of "?"
+    if question-mark-pos >= 0:
       // Replace the existing query parameters with ours.
-      path = path[..question_mark_pos]
-    if query_parameters:
-      encoded_params := []
-      query_parameters.do: | key value |
-        encoded_key := url.encode key
+      path = path[..question-mark-pos]
+    if query-parameters:
+      encoded-params := []
+      query-parameters.do: | key value |
+        encoded-key := url.encode key
         if value is List:
           value.do:
-            encoded_params.add "$encoded_key=$(url.encode it)"
+            encoded-params.add "$encoded-key=$(url.encode it)"
         else:
-          encoded_params.add "$encoded_key=$(url.encode value)"
-      path = "$path?$(encoded_params.join "&")"
+          encoded-params.add "$encoded-key=$(url.encode value)"
+      path = "$path?$(encoded-params.join "&")"
     else if query:
       path = "$path?$query"
 
@@ -227,29 +227,29 @@ class Client:
     response/http.Response := ?
     if method == http.GET:
       if payload: throw "GET requests cannot have a payload"
-      response = http_client_.get --uri=uri --headers=headers
+      response = http-client_.get --uri=uri --headers=headers
     else if method == http.PATCH or method == http.DELETE or method == http.PUT:
       // TODO(florian): the http client should support PATCH.
       // TODO(florian): we should only do this if the payload is a Map.
       encoded := json.encode payload
       headers.set "Content-Type" "application/json"
-      request := http_client_.new_request --uri=uri --headers=headers method
+      request := http-client_.new-request --uri=uri --headers=headers method
       request.body = io.Reader encoded
       response = request.send
     else:
       if method != http.POST: throw "UNIMPLEMENTED"
       if payload is Map:
-        response = http_client_.post_json --uri=uri --headers=headers payload
+        response = http-client_.post-json --uri=uri --headers=headers payload
       else:
-        response = http_client_.post --uri=uri --headers=headers payload
+        response = http-client_.post --uri=uri --headers=headers payload
 
     return response
 
   /**
-  Variant of $(request_ --raw_response --path --method).
+  Variant of $(request_ --raw-response --path --method).
 
   Does a request to the Supabase API, and extracts the response.
-  If $parse_response_json is true, then parses the response as a JSON
+  If $parse-response-json is true, then parses the response as a JSON
     object.
   Otherwise returns it as a byte array.
   */
@@ -258,49 +258,49 @@ class Client:
       --method/string
       --bearer/string? = null
       --query/string? = null
-      --query_parameters/Map? = null
+      --query-parameters/Map? = null
       --headers/http.Headers? = null
-      --parse_response_json/bool = true
+      --parse-response-json/bool = true
       --payload/any = null
       --schema/string? = null:
     response := request_
-        --raw_response
+        --raw-response
         --path=path
         --method=method
         --bearer=bearer
         --query=query
-        --query_parameters=query_parameters
+        --query-parameters=query-parameters
         --headers=headers
         --payload=payload
         --schema=schema
 
     body := response.body
-    if not is_success_status_code_ response.status_code:
-      body_bytes := utils.read_all body
+    if not is-success-status-code_ response.status-code:
+      body-bytes := utils.read-all body
       message := ""
       exception := catch:
-        decoded := json.decode body_bytes
+        decoded := json.decode body-bytes
         message = decoded.get "msg" or
             decoded.get "message" or
             decoded.get "error_description" or
             decoded.get "error" or
-            body_bytes.to_string_non_throwing
+            body-bytes.to-string-non-throwing
       if exception:
-        message = body_bytes.to_string_non_throwing
-      throw "FAILED: $response.status_code - $message"
+        message = body-bytes.to-string-non-throwing
+      throw "FAILED: $response.status-code - $message"
 
-    if not parse_response_json:
-      return (utils.read_all body).to_string_non_throwing
+    if not parse-response-json:
+      return (utils.read-all body).to-string-non-throwing
 
     // Still check whether there is a response.
     // When performing an RPC we can't know in advance whether the function
     // returns something or not.
-    buffered_body := body
-    if not buffered_body.try-ensure-buffered 1:
+    buffered-body := body
+    if not buffered-body.try-ensure-buffered 1:
       return null
 
     try:
-      return json.decode_stream buffered_body
+      return json.decode-stream buffered-body
     finally:
       catch: response.drain
 
@@ -314,34 +314,34 @@ interface LocalStorage:
   /**
   Whether the storage contains any authorization information.
   */
-  has_auth -> bool
+  has-auth -> bool
 
   /**
   Returns the stored authorization information.
   If none exists, returns null.
   */
-  get_auth -> any?
+  get-auth -> any?
 
   /**
   Sets the authorization information to $value.
 
   The $value must be JSON-encodable.
   */
-  set_auth value/any -> none
+  set-auth value/any -> none
 
   /**
   Removes any authorization information.
   */
-  remove_auth -> none
+  remove-auth -> none
 
 /**
 A simple implementation of $LocalStorage that simply discards all data.
 */
 class NoLocalStorage implements LocalStorage:
-  has_auth -> bool: return false
-  get_auth -> any?: return null
-  set_auth value/any: return
-  remove_auth -> none: return
+  has-auth -> bool: return false
+  get-auth -> any?: return null
+  set-auth value/any: return
+  remove-auth -> none: return
 
 /**
 A client for the PostgREST API.
@@ -365,14 +365,14 @@ class PostgRest:
   Note that this return preference leads to a permission error if the
     table is only write-only.
   */
-  static RETURN_HEADER_ONLY_ ::= "header-only"
+  static RETURN-HEADER-ONLY_ ::= "header-only"
   /**
   The response is the full representation.
 
   This return preference is allowed for 'POST', 'PATCH', 'DELETE' and
     'PUT' requests.
   */
-  static RETURN_REPRESENTATION_ ::= "representation"
+  static RETURN-REPRESENTATION_ ::= "representation"
   /**
   The response does not include the 'Location' header, as would be
     the case with 'RETURN_HEADER_ONLY'. This return preference must
@@ -381,15 +381,15 @@ class PostgRest:
   This return preference is allowed for 'POST', 'PATCH', 'DELETE' and
     'PUT' requests.
   */
-  static RETURN_MINIMAL_ ::= "minimal"
+  static RETURN-MINIMAL_ ::= "minimal"
 
   client_/Client
 
   constructor .client_:
 
-  encode_filters_ filters/List -> string:
+  encode-filters_ filters/List -> string:
     escaped := filters.map: | filter/Filter |
-      filter.to_string --nested=false --negated=false
+      filter.to-string --nested=false --negated=false
     return escaped.join "&"
 
   /**
@@ -398,11 +398,11 @@ class PostgRest:
   The $filters must be instances of the $Filter class.
   */
   select table/string --filters/List=[] --schema/string?=null -> List:
-    query_filters := encode_filters_ filters
+    query-filters := encode-filters_ filters
     return client_.request_
         --method=http.GET
         --path="/rest/v1/$table"
-        --query=query_filters
+        --query=query-filters
         --schema=schema
 
   /**
@@ -410,23 +410,23 @@ class PostgRest:
 
   If the row would violate a unique constraint, then the operation fails.
 
-  If $return_inserted is true, then returns the inserted row.
+  If $return-inserted is true, then returns the inserted row.
   */
   insert -> Map?
       table/string
       payload/Map
-      --return_inserted/bool=true
+      --return-inserted/bool=true
       --schema/string?=null:
     headers := http.Headers
-    headers.add "Prefer" "return=$(return_inserted ? RETURN_REPRESENTATION_ : RETURN_MINIMAL_)"
+    headers.add "Prefer" "return=$(return-inserted ? RETURN-REPRESENTATION_ : RETURN-MINIMAL_)"
     response := client_.request_
         --method=http.POST
         --headers=headers
         --path="/rest/v1/$table"
         --payload=payload
-        --parse_response_json=return_inserted
+        --parse-response-json=return-inserted
         --schema=schema
-    if return_inserted:
+    if return-inserted:
       return response.size == 0 ? null : response[0]
     return null
 
@@ -436,17 +436,17 @@ class PostgRest:
   The $filters must be instances of the $Filter class.
   */
   update table/string payload/Map --filters/List --schema/string?=null -> none:
-    query_filters := encode_filters_ filters
+    query-filters := encode-filters_ filters
     // We are not using the response. Use the minimal response.
     headers := http.Headers
-    headers.add "Prefer" RETURN_MINIMAL_
+    headers.add "Prefer" RETURN-MINIMAL_
     client_.request_
         --method=http.PATCH
         --headers=headers
         --path="/rest/v1/$table"
         --payload=payload
-        --parse_response_json=false
-        --query=query_filters
+        --parse-response-json=false
+        --query=query-filters
         --schema=schema
 
   /**
@@ -459,25 +459,25 @@ class PostgRest:
   upsert -> none
       table/string
       payload/Map
-      --ignore_duplicates/bool=false
+      --ignore-duplicates/bool=false
       --schema/string?=null:
     // TODO(florian): add support for '--on_conflict'.
     // In that case the conflict detection is on the column given by
     // on_column (which must be 'UNIQUE').
     // Verify this, and add the parameter.
     headers := http.Headers
-    preference := ignore_duplicates
+    preference := ignore-duplicates
         ? "resolution=ignore-duplicates"
         : "resolution=merge-duplicates"
     headers.add "Prefer" preference
     // We are not using the response. Use the minimal response.
-    headers.add "Prefer" RETURN_MINIMAL_
+    headers.add "Prefer" RETURN-MINIMAL_
     client_.request_
         --method=http.POST
         --headers=headers
         --path="/rest/v1/$table"
         --payload=payload
-        --parse_response_json=false
+        --parse-response-json=false
         --schema=schema
 
   /**
@@ -490,16 +490,16 @@ class PostgRest:
   The $filters must be instances of the $Filter class.
   */
   delete table/string --filters/List --schema/string?=null -> none:
-    query_filters := encode_filters_ filters
+    query-filters := encode-filters_ filters
     // We are not using the response. Use the minimal response.
     headers := http.Headers
-    headers.add "Prefer" RETURN_MINIMAL_
+    headers.add "Prefer" RETURN-MINIMAL_
     client_.request_
         --method=http.DELETE
         --headers=headers
         --path="/rest/v1/$table"
-        --parse_response_json=false
-        --query=query_filters
+        --parse-response-json=false
+        --query=query-filters
         --schema=schema
 
   /**
@@ -541,7 +541,7 @@ class Storage:
         --headers=headers
         --path="/storage/v1/object/$path"
         --payload=contents
-        --parse_response_json=false
+        --parse-response-json=false
 
   /**
   Downloads the data stored in $path from the storage.
@@ -550,7 +550,7 @@ class Storage:
   */
   download --path/string --public/bool=false -> ByteArray:
     download --path=path --public=public: | reader/io.Reader |
-      return utils.read_all reader
+      return utils.read-all reader
     unreachable
 
   /**
@@ -568,18 +568,18 @@ class Storage:
       end := size ? "$(offset + size - 1)" : ""
       headers = http.Headers
       headers.add "Range" "bytes=$offset-$end"
-    full_path := public
+    full-path := public
         ? "/storage/v1/object/public/$path"
         : "/storage/v1/object/$path"
-    response := client_.request_ --raw_response
+    response := client_.request_ --raw-response
         --method=http.GET
-        --path=full_path
+        --path=full-path
         --headers=headers
     // Check the status code. The correct result depends on whether
     // or not we're doing a partial fetch.
-    status := response.status_code
+    status := response.status-code
     body := response.body
-    okay := status == status_codes.STATUS_OK or (partial and status == status_codes.STATUS_PARTIAL_CONTENT)
+    okay := status == status-codes.STATUS-OK or (partial and status == status-codes.STATUS-PARTIAL-CONTENT)
     try:
       if not okay: throw "Not found ($status)"
       block.call body
@@ -589,11 +589,11 @@ class Storage:
   /**
   Returns a list of all buckets.
   */
-  list_buckets -> List:
+  list-buckets -> List:
     return client_.request_
         --method=http.GET
         --path="/storage/v1/bucket"
-        --parse_response_json=true
+        --parse-response-json=true
 
   /**
   Returns a list of all objects at the given path.
@@ -601,15 +601,15 @@ class Storage:
   */
   list path/string -> List:
     if path == "": throw "INVALID_ARGUMENT"
-    first_slash := path.index_of "/"
+    first-slash := path.index-of "/"
     bucket/string := ?
     prefix/string := ?
-    if first_slash == -1:
+    if first-slash == -1:
       bucket = path
       prefix = ""
     else:
-      bucket = path[0..first_slash]
-      prefix = path[first_slash + 1..path.size]
+      bucket = path[0..first-slash]
+      prefix = path[first-slash + 1..path.size]
 
     payload := {
       "prefix": prefix,
@@ -617,11 +617,11 @@ class Storage:
     return client_.request_
         --method=http.POST
         --path="/storage/v1/object/list/$bucket"
-        --parse_response_json=true
+        --parse-response-json=true
         --payload=payload
 
   /**
   Computes the public URL for the given $path.
   */
-  public_url_for --path/string -> string:
+  public-url-for --path/string -> string:
     return "$client_.uri_/storage/v1/object/public/$path"

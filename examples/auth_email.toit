@@ -7,20 +7,20 @@ import system
 
 signup args/List:
   if args.size != 3:
-    print "Usage: $system.program_name signup <email> <password>"
+    print "Usage: $system.program-name signup <email> <password>"
     exit 1
 
-  client := instantiate_client
-  client.auth.sign_up --email=args[1] --password=args[2]
+  client := instantiate-client
+  client.auth.sign-up --email=args[1] --password=args[2]
   print "Signed up"
 
 login args/List:
   if args.size != 3:
-    print "Usage: $system.program_name login <email> <password>"
+    print "Usage: $system.program-name login <email> <password>"
     exit 1
 
-  client := instantiate_client
-  client.auth.sign_in --email=args[1] --password=args[2]
+  client := instantiate-client
+  client.auth.sign-in --email=args[1] --password=args[2]
   print "Logged in"
 
 main args:
@@ -33,8 +33,8 @@ main args:
       login args
       return
 
-  client := instantiate_client
-  client.ensure_authenticated: | reason/string |
+  client := instantiate-client
+  client.ensure-authenticated: | reason/string |
     print "Authentication failure: $reason"
     exit 1
 

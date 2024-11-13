@@ -2,18 +2,18 @@
 // Use of this source code is governed by a Zero-Clause BSD license that can
 // be found in the EXAMPLES_LICENSE file.
 
-import certificate_roots
+import certificate-roots
 import host.os
 import supabase
-import .local_storage
+import .local-storage
 
-SUPABASE_URL ::= ""
-SUPABASE_ANON_KEY ::= ""
+SUPABASE-URL ::= ""
+SUPABASE-ANON-KEY ::= ""
 
-instantiate_client -> supabase.Client
-    --url/string=SUPABASE_URL
-    --anon/string=SUPABASE_ANON_KEY
-    --local_storage/supabase.LocalStorage?=(ConfigLocalStorage --app_name="supabase-demo"):
+instantiate-client -> supabase.Client
+    --url/string=SUPABASE-URL
+    --anon/string=SUPABASE-ANON-KEY
+    --local-storage/supabase.LocalStorage?=(ConfigLocalStorage --app-name="supabase-demo"):
   if url == "":
     url = os.env.get "SUPABASE_URL"
     anon = os.env.get "SUPABASE_ANON_KEY"
@@ -25,4 +25,4 @@ instantiate_client -> supabase.Client
   return supabase.Client
       --uri=url
       --anon=anon
-      --local_storage=local_storage
+      --local-storage=local-storage
