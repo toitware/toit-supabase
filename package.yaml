@@ -5,10 +5,10 @@ environment:
 dependencies:
   desktop:
     url: github.com/toitlang/pkg-desktop
-    version: ^1.0.0
+    version: ^1.1.0
   host:
     url: github.com/toitlang/pkg-host
-    version: ^1.15.0
+    version: ^1.16.2
   http:
     url: github.com/toitlang/pkg-http
-    version: ^2.7.0
+    version: ^2.9.0
