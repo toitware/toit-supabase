@@ -9,7 +9,6 @@ import http.status-codes
 import encoding.json
 import encoding.url
 import io
-import tls
 
 import .auth
 import .utils_ as utils
