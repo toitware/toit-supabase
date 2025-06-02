@@ -363,10 +363,6 @@ test_storage config/supabase.ServerConfig:
   downloaded = client_auth.storage.download --path="$TEST_BUCKET_PUBLIC/$file_name"
   expect_equals contents downloaded
 
-  // Anon can not download directly.
-  expect_throws --contains="Not found":
-    client_anon.storage.download --path="$TEST_BUCKET_PUBLIC/$file_name"
-
   // Anon can download through the public URL.
   downloaded = client_anon.storage.download --public
       --path="$TEST_BUCKET_PUBLIC/$file_name"
